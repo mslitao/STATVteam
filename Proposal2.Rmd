@@ -1,0 +1,63 @@
+---
+title: "STAT 420 Final Project Proposal"
+date: "July 17, 2019"
+output:
+  html_document: 
+    toc: yes
+  pdf_document: default
+urlcolor: cyan
+---
+
+# Group Members
+- Tao Li (taol4)
+- Chun Yue Shek (cyshek2)
+- Wanlin Yang (wanliny2)
+
+
+```{r}
+train = read.csv("train.csv", stringsAsFactors = FALSE)
+test = read.csv("test.csv")
+validate = read.csv("validate.csv", stringsAsFactors = FALSE)
+estate = rbind(train, validate)
+str(estate)
+```
+
+```{r}
+# give the dataset row names, based on id, address
+rownames(estate) = paste(estate$id, estate$address)
+```
+
+```{r}
+# keep 
+estate2 = subset(estate, select = c("bedrooms_total", "baths_total", "acres", "sq_ft_tot_fn", "tax_gross_amount", "assessment_value_town", "garage_capacity", "city", "year_built", "total_stories", "rooms_total", "garage", "price_closed"))
+```
+
+```{r}
+# remove missing data, which is stored as "?"
+estate2 = subset(estate2, estate2$year_built != "?")
+estate2 = subset(estate2, estate2$acres != "?")
+estate2 = subset(estate2, estate2$tax_gross_amount != "?")
+estate2 = subset(estate2, estate2$assessment_value_town != "?")
+```
+
+```{r}
+estate2$city = as.factor(estate2$city)
+estate2$garage = as.factor(estate2$garage)
+```
+```{r}
+str(estate2)
+```
+
+```{r}
+mod = lm(price_closed ~ ., data = estate2)
+summary(mod)
+```
+```{r}
+plot(estate2)
+```
+
+```{r}
+plot(mod)
+```
+
+
