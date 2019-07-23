@@ -392,8 +392,8 @@ $(document).ready(function () {
 <li><a href="#perform-data-cleaning">Perform data cleaning</a></li>
 </ul></li>
 <li><a href="#modeling">Modeling</a><ul>
-<li><a href="#modeling-with-all-predictors-and-price_closed-as-response.">Modeling with all predictors and price_closed as response.</a></li>
-<li><a href="#understand-colleration">Understand colleration</a></li>
+<li><a href="#proposed-approach">Proposed approach</a></li>
+<li><a href="#further-analysis">Further analysis</a></li>
 </ul></li>
 </ul>
 </div>
@@ -523,11 +523,13 @@ $(document).ready(function () {
 </div>
 <div id="modeling" class="section level1">
 <h1>Modeling</h1>
-<div id="modeling-with-all-predictors-and-price_closed-as-response." class="section level2">
-<h2>Modeling with all predictors and price_closed as response.</h2>
+<div id="proposed-approach" class="section level2">
+<h2>Proposed approach</h2>
+<p>We will firstly implement the model with all 79 predictors and analyse its metrics. But using all 79 predictors seems too much, so we need to investigate the correlation between predictors and pick a suitable combination of predictors to make the model robust. For example, we can find the best model for 10 predictors, 20 predictors, 40 predictors separately, and compare their performance with the one that uses all predictors.</p>
 </div>
-<div id="understand-colleration" class="section level2">
-<h2>Understand colleration</h2>
+<div id="further-analysis" class="section level2">
+<h2>Further analysis</h2>
+<p>It will be applealing that the model will work for house in real life rather than only test data. We may apply the model over the houses we have known around us, and analyse whether there can be some potential influence to the house price that cannot be reflected by data.</p>
 </div>
 </div>
 

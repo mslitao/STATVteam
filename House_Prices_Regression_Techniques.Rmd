@@ -133,7 +133,10 @@ There is a Train, Test dataset. We want to show a cross validated result that wi
 
 # Modeling
 
-## Modeling with all predictors and price_closed as response.
+## Proposed approach
 
+We will firstly implement the model with all 79 predictors and analyse its metrics. But using all 79 predictors seems too much, so we need to investigate the correlation between predictors and pick a suitable combination of predictors to make the model robust. For example, we can find the best model for 10 predictors, 20 predictors, 40 predictors separately, and compare their performance with the one that uses all predictors.
 
-## Understand colleration
+## Further analysis
+
+It will be applealing that the model will work for house in real life rather than only test data. We may apply the model over the houses we have known around us, and analyse whether there can be some potential influence to the house price that cannot be reflected by data.
