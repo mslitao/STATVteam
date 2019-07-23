@@ -127,11 +127,41 @@ There is a Train, Test dataset. We want to show a cross validated result that wi
 
 ## Load the data
 
+```{r}
+train = read.csv("train.csv")
+str(train)
+```
 
+Let's first start with a subset of features to do some basic analysis.
+```{r}
+train = subset(train, select = c("YearBuilt", "LotArea", "Street", "Heating", "CentralAir", "FullBath", "HalfBath", "BedroomAbvGr", "KitchenQual", "GarageType", "SalePrice"))
+```
 
 ## Perform data cleaning
+Before we do the analysis and modeling, let's clean the data by removing the empty values.
+```{r}
+# remove missing data, which is stored as "?"
+train = subset(train, train$GarageType != "?")
+head(train)
+```
 
 # Modeling
+
+## Beta modeling and analysis
+```{r}
+mod = lm(SalePrice ~ ., data = train)
+summary(mod)
+```
+
+```{r}
+#plot(train)
+plot(mod)
+```
+
+Based on the analysis, it's clear to see
+
+- The beta model can fit the data with these selected predictors.
+- It's not enough to achieve a good enough model. We will continue the analysis and try advanced modeling techniques in the project.
 
 ## Proposed approach
 
