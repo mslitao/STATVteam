@@ -7,6 +7,7 @@ output:
   pdf_document: default
 urlcolor: cyan
 ---
+***
 
 # Group Members
 - Tao Li (taol4)
@@ -21,6 +22,8 @@ Ask a home buyer to describe their dream house, and they probably won't begin wi
 
 We will use 79 explanatory variables describing (almost) every aspect of residential homes in Ames, Iowa, we will try all the techniques learned in this lession to predict the final price of each home.
 
+***
+
 # Dataset
 
 We will use the [Real Estate Data](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data) dataset for our final project.
@@ -28,8 +31,6 @@ We will use the [Real Estate Data](https://www.kaggle.com/c/house-prices-advance
 - train.csv - the training set
 - test.csv - the test set
 - data_description.txt - full description of each column, originally prepared by Dean De Cock but lightly edited to match the column names used here
-
-
 
 ## Description
 
@@ -122,6 +123,7 @@ Here's a brief version of what you'll find in the data description file.
 
 There is a Train, Test dataset. We want to show a cross validated result that with a smallest error inprice? We will try different measures to train your model - RMSE, RMSLE, etc.; however, the accuracy metric is simply mean percent error. We will also perform the feature transofmation and selection to get best model predicting the price.
 
+***
 
 # Investigation
 
