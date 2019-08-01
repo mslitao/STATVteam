@@ -24,15 +24,20 @@ train = train[!rowSums(is.na(train)),]
 
 ## How many dummy variables in the remaining data
 ```{r}
-is_factor_list = rep(FALSE, ncol(train))
+
 # can't find a more efficient way ...
-for (i in 1:ncol(train)) {
-  if (is.factor(train[,i])) {
-    is_factor_list[i] = TRUE
+find_factor_idx = function(dataset) {
+  is_factor_list = rep(FALSE, ncol(train))
+  for (i in 1:ncol(dataset)) {
+    if (is.factor(dataset[,i])) {
+      is_factor_list[i] = TRUE
+    }
   }
+  which(is_factor_list)
 }
-factor_col_idx = which(is_factor_list)
+factor_col_idx = find_factor_idx(train)
 length(factor_col_idx)
+numeric_train = train[,-factor_col_idx]
 ```
 We have 34 factor predictors. Want to remove 20 of them.
 
@@ -61,10 +66,36 @@ length(rm_col_idx2)
 rm_col_idx3 = factor_col_idx[which(max_level_amount_list/nrow(train)>0.8)]
 length(rm_col_idx3)
 ```
-Well, 30 factor predictors will be removed if we apply upper and lower limits. If only upper limit is applied, 18 factor predictors will be remove. At this moment we will only consider the upper limit.
+Well, 30 factor predictors will be removed if we apply upper and lower limits. If only the upper limit is applied, 18 factor predictors will be remove. At this moment we will only consider the upper limit.
 Whether lower limit should be considered will be left for discussion.
 
 ```{r}
 train = train[,-rm_col_idx3]
+```
+
+Let's look at number of level of each factor predictor
+```{r}
+factor_col_idx = find_factor_idx(train)
+num_of_levels = rep(0, length(factor_col_idx))
+for (i in 1:length(factor_col_idx)) {
+  col_idx = factor_col_idx[i]
+  num_of_levels[i] = length(levels(train[,col_idx]))
+}
+num_of_levels
+```
+We may remove the predictor that has too many levels.
+```{r}
+rm_col_idx = factor_col_idx[which(num_of_levels > 6)]
+train = train[, -rm_col_idx]
+```
+
+
+## Correlation
+```{r}
+library(corrplot)
+correlations = cor(numeric_train, use = "everything")
+```
+```{r}
+corrplot(correlations, method="circle", type="lower",  sig.level = 0.01, insig = "blank")
 ```
 
