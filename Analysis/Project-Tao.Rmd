@@ -1,0 +1,82 @@
+---
+title: "Project-Tao"
+author: "taol4"
+date: "7/31/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Measurement
+ 
+### RMSE
+Root-Mean-Squared-Error (RMSE) between the logarithm of the predicted value and the logarithm of the observed sales price. (Taking logs means that errors in predicting expensive houses and cheap houses will affect the result equally.)
+
+The definition of RMSE will stay the same
+
+\[
+\text{RMSE}(\text{model, data}) = \sqrt{\frac{1}{n} \sum_{i = 1}^{n}(y_i - \hat{y}_i)^2}
+\]
+
+where
+
+- $y_i$ are the actual values of the response for the given data.
+- $\hat{y}_i$ are the predicted values using the fitted model and the predictors from the data.
+
+### $R^2$
+Higher $R^2$ the better
+### LOOCV-RMSE
+Reach a LOOCV-RMSE below a number
+
+### Shapiro-Wilk test 
+
+### Number of parameters
+
+### F statistic 
+
+### p-value
+
+### Metrics on both train and test data
+we will now evaluate it on both the **train** set and the **test** set separately. 
+
+
+
+## Hypothesis test for feature and model selection
+
+- Null hypothesis for some predictor 
+
+
+## Model Selection
+
+- Additive model
+- Interaction Model
+- Feature and Response transform
+
+## Feature selection
+
+- AIC
+- BIC
+- Backward
+- Forward
+
+## Diagnostics 
+- fitted versus residuals plot
+- Normal Q-Q plot of the residuals 
+
+## Prediction
+
+### Prediction
+
+High price
+Low price
+Prediction Analysis
+
+### Prediction interval
+
+90%
+99%
+
+
+
