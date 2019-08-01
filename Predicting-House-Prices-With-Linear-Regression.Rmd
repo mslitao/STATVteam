@@ -133,19 +133,21 @@ There is a Train, Test dataset. We want to show a cross validated result that wi
 train = read.csv("train.csv")
 str(train)
 ```
-
-Let's first start with a subset of features to do some basic analysis.
+# give the dataset row names, based on id, address
 ```{r}
-train = subset(train, select = c("YearBuilt", "LotArea", "Street", "Heating", "CentralAir", "FullBath", "HalfBath", "BedroomAbvGr", "KitchenQual", "GarageType", "SalePrice"))
+rownames(train) = train$Id
 ```
-
 ## Perform data cleaning
 Before we do the analysis and modeling, let's clean the data by removing the empty values.
 ```{r}
-# remove missing data, which is stored as "?"
-train = subset(train, train$GarageType != "?")
-head(train)
+train = train[, -which(names(train) %in% c("Id", "Alley", "Utilities", "Condition1", "Condition2","Exterior1st", "Exterior2nd", "FireplaceQu", "PoolQC", "Fence", "MiscFeature"))]
 ```
+
+```{r}
+train = train[!rowSums(is.na(train)),]
+```
+
+
 
 # Modeling
 
@@ -153,6 +155,11 @@ head(train)
 ```{r}
 mod = lm(SalePrice ~ ., data = train)
 summary(mod)
+```
+
+```{r}
+(mod_aic_back = step(mod, trace = 0))
+length(coef(mod_aic_back))
 ```
 
 ```{r}
