@@ -1,0 +1,70 @@
+# Data Cleaning
+
+```{r}
+train = read.csv("train.csv")
+```
+
+## Remove predictors with too many NAN
+Remove predictors having more than 5% of Nan.
+```{r}
+num_nan = rep(0, ncol(train))
+for (i in 1:ncol(train)) {
+  num_nan[i] = sum(is.na(train[,i]))
+}
+rm_col_idx = which(num_nan/nrow(train) > 0.05)
+colnames(train)[rm_col_idx]
+```
+Above are 11 predictors that should be removed.
+
+## Remove rows containing NAN
+```{r}
+train = train[,-rm_col_idx]
+train = train[!rowSums(is.na(train)),]
+```
+
+## How many dummy variables in the remaining data
+```{r}
+is_factor_list = rep(FALSE, ncol(train))
+# can't find a more efficient way ...
+for (i in 1:ncol(train)) {
+  if (is.factor(train[,i])) {
+    is_factor_list[i] = TRUE
+  }
+}
+factor_col_idx = which(is_factor_list)
+length(factor_col_idx)
+```
+We have 34 factor predictors. Want to remove 20 of them.
+
+If a particular level in a factor occupies too much ratio, like 80%, or a particular level in a factor occupies to little, like 2%, we may think the factor predictor is useless.
+```{r}
+# function of finding the max amount of level of one factor column
+extreme_level_amount = function(vec) {
+  max_amount = 0
+  min_amount = length(vec)
+  for (lv in levels(vec)) {
+    max_amount = max(max_amount, sum(vec==lv))
+    min_amount = min(min_amount, sum(vec==lv))
+  }
+  c(max_amount, min_amount)
+}
+# find the amount of max-level of each factor
+max_level_amount_list = rep(0, length(factor_col_idx))
+min_level_amount_list = rep(0, length(factor_col_idx))
+for (i in 1:length(factor_col_idx)) {
+  col_idx = factor_col_idx[i]
+  max_level_amount_list[i] = extreme_level_amount(train[,col_idx])[1]
+  min_level_amount_list[i] = extreme_level_amount(train[,col_idx])[2]
+}
+rm_col_idx2 = factor_col_idx[which((max_level_amount_list/nrow(train)>0.8) | (min_level_amount_list/nrow(train)<0.02))]
+length(rm_col_idx2)
+rm_col_idx3 = factor_col_idx[which(max_level_amount_list/nrow(train)>0.8)]
+length(rm_col_idx3)
+```
+Well, 30 factor predictors will be removed if we apply upper and lower limits. If only upper limit is applied, 18 factor predictors will be remove. At this moment we will only consider the upper limit.
+Whether lower limit should be considered will be left for discussion.
+
+```{r}
+train = train[,-rm_col_idx3]
+```
+
