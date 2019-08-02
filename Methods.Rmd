@@ -49,9 +49,15 @@ numericFeatures = numericFeatures[!numericFeatures %in% c("SalePrice")]
 
 n = length(numericFeatures)
 correlations = rep(0.0, n)
+correlations_log_na = rep(0.0, n)
+correlations_na_log = rep(0.0, n)
+correlations_log_log = rep(0.0, n)
 
 for(i in 1:n){
   correlations[i] = cor(train[,numericFeatures[i]], train[,"SalePrice"])
+  correlations_log_na[i] = cor(log(train[,numericFeatures[i]]), train[,"SalePrice"])
+  correlations_na_log[i] = cor(train[,numericFeatures[i]], log(train[,"SalePrice"]))
+  correlations_log_log[i] = cor(log(train[,numericFeatures[i]]), log(train[,"SalePrice"]))
 }
 
 
@@ -102,6 +108,9 @@ for(i in 1:n){
 featureStat = data.frame(features = numericFeatures, 
                    correlations = round(correlations,2),
                    abs_correlations = round(abs(correlations),2),
+                   correlations_log_na = round(correlations_log_na,2),
+                   correlations_na_log = round(correlations_na_log,2),
+                   correlations_log_log = round(correlations_log_log,2),
                    collinearity_mean = round(collinearity_mean,2),
                    collinearity_mean_top3 = round(collinearity_mean3,2),
                    collinearity_mean_top5 = round(collinearity_mean5,2),
@@ -121,9 +130,8 @@ kable(featureStat)
 
 
 ## Feature Selection
+
 ```{r}
-
-
 # Calculate RMSE
 cal_rmse = function(y, y_hat){
   n = length(y)
@@ -152,4 +160,83 @@ envaluate_model(fit_selected, data)
 #coef(fit_selected)
 ```
 
+Transform 
+
+- Log Transform 
+- Feature range is larger (Area)
+log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea)
+
+Interaction
+
+For top important features
+
+- OverallQual
+- GrLivArea
+- GarageCars
+- GarageCars
+- YearBuilt
+- YearRemodAdd
+
+Collinearity
+
+- Year based: 
+
+  YearBuilt - GarageYtBlt - YearRemodAdd - OverallQual
+- Area based
+
+  GrLivArea - TotRmsAbvGrd - X2ndFlrSF - FullBath
+  
+  TotalBsmtSF - X1stFlrSF - OverallQual - GarageArea
+  
+- Garage
+
+  GarageCars - GarageArea - GarageYtBlt - OverallQual
+  
+- First Floor
+
+  X1stFlrSF - TotalBsmtSF - GrLivArea - GarageArea
+  
+- Second Floor
+
+  X2ndFlrSF - GrLivArea - HalfBath - FullBath
+- Lot 
+
+  LotFrontage
+  LotArea
+
 ## Model Selection
+
+
+
+```{r}
+fit = lm(log(SalePrice) ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = data)
+
+cal_rmse(log(data$SalePrice), predict(fit, newdata = data))
+
+```
+
+AIC
+
+```{r}
+fit_aic = step(fit,trace = 0)
+cal_rmse(log(data$SalePrice), predict(fit_aic, newdata = data))
+```
+
+BIC
+```{r}
+n = nrow(data)
+
+fit_bic = step(fit,trace = 0, k = log(n))
+
+cal_rmse(log(data$SalePrice), predict(fit_bic, newdata = data))
+```
+
+
+Interaction
+
+```{r}
+fit = lm(log(SalePrice) ~ .^2, data = data)
+
+cal_rmse(log(data$SalePrice), predict(fit, newdata = data))
+```
+

@@ -418,9 +418,15 @@ numericFeatures = numericFeatures[!numericFeatures %in% c(&quot;SalePrice&quot;)
 
 n = length(numericFeatures)
 correlations = rep(0.0, n)
+correlations_log_na = rep(0.0, n)
+correlations_na_log = rep(0.0, n)
+correlations_log_log = rep(0.0, n)
 
 for(i in 1:n){
   correlations[i] = cor(train[,numericFeatures[i]], train[,&quot;SalePrice&quot;])
+  correlations_log_na[i] = cor(log(train[,numericFeatures[i]]), train[,&quot;SalePrice&quot;])
+  correlations_na_log[i] = cor(train[,numericFeatures[i]], log(train[,&quot;SalePrice&quot;]))
+  correlations_log_log[i] = cor(log(train[,numericFeatures[i]]), log(train[,&quot;SalePrice&quot;]))
 }
 
 
@@ -471,6 +477,9 @@ for(i in 1:n){
 featureStat = data.frame(features = numericFeatures, 
                    correlations = round(correlations,2),
                    abs_correlations = round(abs(correlations),2),
+                   correlations_log_na = round(correlations_log_na,2),
+                   correlations_na_log = round(correlations_na_log,2),
+                   correlations_log_log = round(correlations_log_log,2),
                    collinearity_mean = round(collinearity_mean,2),
                    collinearity_mean_top3 = round(collinearity_mean3,2),
                    collinearity_mean_top5 = round(collinearity_mean5,2),
@@ -492,6 +501,9 @@ kable(featureStat)</code></pre>
 <th align="left">features</th>
 <th align="right">correlations</th>
 <th align="right">abs_correlations</th>
+<th align="right">correlations_log_na</th>
+<th align="right">correlations_na_log</th>
+<th align="right">correlations_log_log</th>
 <th align="right">collinearity_mean</th>
 <th align="right">collinearity_mean_top3</th>
 <th align="right">collinearity_mean_top5</th>
@@ -509,6 +521,9 @@ kable(featureStat)</code></pre>
 <td align="left">OverallQual</td>
 <td align="right">0.80</td>
 <td align="right">0.80</td>
+<td align="right">0.75</td>
+<td align="right">0.82</td>
+<td align="right">0.80</td>
 <td align="right">0.25</td>
 <td align="right">0.58</td>
 <td align="right">0.57</td>
@@ -524,6 +539,9 @@ kable(featureStat)</code></pre>
 <td align="left">GrLivArea</td>
 <td align="right">0.72</td>
 <td align="right">0.72</td>
+<td align="right">0.70</td>
+<td align="right">0.72</td>
+<td align="right">0.73</td>
 <td align="right">0.26</td>
 <td align="right">0.71</td>
 <td align="right">0.65</td>
@@ -539,6 +557,9 @@ kable(featureStat)</code></pre>
 <td align="left">GarageCars</td>
 <td align="right">0.65</td>
 <td align="right">0.65</td>
+<td align="right">0.60</td>
+<td align="right">0.65</td>
+<td align="right">0.63</td>
 <td align="right">0.24</td>
 <td align="right">0.67</td>
 <td align="right">0.61</td>
@@ -554,6 +575,9 @@ kable(featureStat)</code></pre>
 <td align="left">TotalBsmtSF</td>
 <td align="right">0.64</td>
 <td align="right">0.64</td>
+<td align="right">NaN</td>
+<td align="right">0.63</td>
+<td align="right">NaN</td>
 <td align="right">0.23</td>
 <td align="right">0.60</td>
 <td align="right">0.54</td>
@@ -569,6 +593,9 @@ kable(featureStat)</code></pre>
 <td align="left">X1stFlrSF</td>
 <td align="right">0.62</td>
 <td align="right">0.62</td>
+<td align="right">0.59</td>
+<td align="right">0.60</td>
+<td align="right">0.59</td>
 <td align="right">0.23</td>
 <td align="right">0.60</td>
 <td align="right">0.54</td>
@@ -584,6 +611,9 @@ kable(featureStat)</code></pre>
 <td align="left">GarageArea</td>
 <td align="right">0.62</td>
 <td align="right">0.62</td>
+<td align="right">0.60</td>
+<td align="right">0.62</td>
+<td align="right">0.61</td>
 <td align="right">0.22</td>
 <td align="right">0.64</td>
 <td align="right">0.57</td>
@@ -599,6 +629,9 @@ kable(featureStat)</code></pre>
 <td align="left">FullBath</td>
 <td align="right">0.55</td>
 <td align="right">0.55</td>
+<td align="right">NaN</td>
+<td align="right">0.59</td>
+<td align="right">NaN</td>
 <td align="right">0.23</td>
 <td align="right">0.57</td>
 <td align="right">0.54</td>
@@ -612,6 +645,9 @@ kable(featureStat)</code></pre>
 <tr class="even">
 <td>23</td>
 <td align="left">TotRmsAbvGrd</td>
+<td align="right">0.54</td>
+<td align="right">0.54</td>
+<td align="right">0.52</td>
 <td align="right">0.54</td>
 <td align="right">0.54</td>
 <td align="right">0.21</td>
@@ -629,6 +665,9 @@ kable(featureStat)</code></pre>
 <td align="left">YearBuilt</td>
 <td align="right">0.52</td>
 <td align="right">0.52</td>
+<td align="right">0.52</td>
+<td align="right">0.58</td>
+<td align="right">0.58</td>
 <td align="right">0.22</td>
 <td align="right">0.67</td>
 <td align="right">0.60</td>
@@ -644,6 +683,9 @@ kable(featureStat)</code></pre>
 <td align="left">YearRemodAdd</td>
 <td align="right">0.52</td>
 <td align="right">0.52</td>
+<td align="right">0.52</td>
+<td align="right">0.57</td>
+<td align="right">0.57</td>
 <td align="right">0.18</td>
 <td align="right">0.61</td>
 <td align="right">0.54</td>
@@ -659,6 +701,9 @@ kable(featureStat)</code></pre>
 <td align="left">GarageYrBlt</td>
 <td align="right">0.50</td>
 <td align="right">0.50</td>
+<td align="right">0.50</td>
+<td align="right">0.54</td>
+<td align="right">0.54</td>
 <td align="right">0.21</td>
 <td align="right">0.68</td>
 <td align="right">0.63</td>
@@ -674,6 +719,9 @@ kable(featureStat)</code></pre>
 <td align="left">MasVnrArea</td>
 <td align="right">0.46</td>
 <td align="right">0.46</td>
+<td align="right">NaN</td>
+<td align="right">0.42</td>
+<td align="right">NaN</td>
 <td align="right">0.15</td>
 <td align="right">0.37</td>
 <td align="right">0.36</td>
@@ -689,6 +737,9 @@ kable(featureStat)</code></pre>
 <td align="left">Fireplaces</td>
 <td align="right">0.45</td>
 <td align="right">0.45</td>
+<td align="right">NaN</td>
+<td align="right">0.47</td>
+<td align="right">NaN</td>
 <td align="right">0.14</td>
 <td align="right">0.40</td>
 <td align="right">0.37</td>
@@ -704,6 +755,9 @@ kable(featureStat)</code></pre>
 <td align="left">BsmtFinSF1</td>
 <td align="right">0.39</td>
 <td align="right">0.39</td>
+<td align="right">NaN</td>
+<td align="right">0.37</td>
+<td align="right">NaN</td>
 <td align="right">0.15</td>
 <td align="right">0.55</td>
 <td align="right">0.46</td>
@@ -719,6 +773,9 @@ kable(featureStat)</code></pre>
 <td align="left">OpenPorchSF</td>
 <td align="right">0.35</td>
 <td align="right">0.35</td>
+<td align="right">NaN</td>
+<td align="right">0.36</td>
+<td align="right">NaN</td>
 <td align="right">0.13</td>
 <td align="right">0.30</td>
 <td align="right">0.28</td>
@@ -734,6 +791,9 @@ kable(featureStat)</code></pre>
 <td align="left">WoodDeckSF</td>
 <td align="right">0.31</td>
 <td align="right">0.31</td>
+<td align="right">NaN</td>
+<td align="right">0.32</td>
+<td align="right">NaN</td>
 <td align="right">0.12</td>
 <td align="right">0.23</td>
 <td align="right">0.22</td>
@@ -749,6 +809,9 @@ kable(featureStat)</code></pre>
 <td align="left">X2ndFlrSF</td>
 <td align="right">0.29</td>
 <td align="right">0.29</td>
+<td align="right">NaN</td>
+<td align="right">0.30</td>
+<td align="right">NaN</td>
 <td align="right">0.17</td>
 <td align="right">0.64</td>
 <td align="right">0.56</td>
@@ -764,6 +827,9 @@ kable(featureStat)</code></pre>
 <td align="left">HalfBath</td>
 <td align="right">0.27</td>
 <td align="right">0.27</td>
+<td align="right">NaN</td>
+<td align="right">0.30</td>
+<td align="right">NaN</td>
 <td align="right">0.13</td>
 <td align="right">0.46</td>
 <td align="right">0.37</td>
@@ -779,6 +845,9 @@ kable(featureStat)</code></pre>
 <td align="left">LotArea</td>
 <td align="right">0.26</td>
 <td align="right">0.26</td>
+<td align="right">0.38</td>
+<td align="right">0.25</td>
+<td align="right">0.38</td>
 <td align="right">0.08</td>
 <td align="right">0.25</td>
 <td align="right">0.22</td>
@@ -794,6 +863,9 @@ kable(featureStat)</code></pre>
 <td align="left">BsmtFullBath</td>
 <td align="right">0.24</td>
 <td align="right">0.24</td>
+<td align="right">NaN</td>
+<td align="right">0.24</td>
+<td align="right">NaN</td>
 <td align="right">0.12</td>
 <td align="right">0.46</td>
 <td align="right">0.36</td>
@@ -809,6 +881,9 @@ kable(featureStat)</code></pre>
 <td align="left">BsmtUnfSF</td>
 <td align="right">0.22</td>
 <td align="right">0.22</td>
+<td align="right">NaN</td>
+<td align="right">0.22</td>
+<td align="right">NaN</td>
 <td align="right">0.15</td>
 <td align="right">0.47</td>
 <td align="right">0.41</td>
@@ -824,6 +899,9 @@ kable(featureStat)</code></pre>
 <td align="left">LotFrontage</td>
 <td align="right">0.21</td>
 <td align="right">0.21</td>
+<td align="right">NaN</td>
+<td align="right">0.18</td>
+<td align="right">NaN</td>
 <td align="right">0.08</td>
 <td align="right">0.21</td>
 <td align="right">0.20</td>
@@ -839,6 +917,9 @@ kable(featureStat)</code></pre>
 <td align="left">BedroomAbvGr</td>
 <td align="right">0.16</td>
 <td align="right">0.16</td>
+<td align="right">NaN</td>
+<td align="right">0.19</td>
+<td align="right">NaN</td>
 <td align="right">0.13</td>
 <td align="right">0.57</td>
 <td align="right">0.46</td>
@@ -854,6 +935,9 @@ kable(featureStat)</code></pre>
 <td align="left">KitchenAbvGr</td>
 <td align="right">-0.14</td>
 <td align="right">0.14</td>
+<td align="right">-0.14</td>
+<td align="right">-0.15</td>
+<td align="right">-0.16</td>
 <td align="right">0.08</td>
 <td align="right">0.22</td>
 <td align="right">0.20</td>
@@ -869,6 +953,9 @@ kable(featureStat)</code></pre>
 <td align="left">EnclosedPorch</td>
 <td align="right">-0.12</td>
 <td align="right">0.12</td>
+<td align="right">NaN</td>
+<td align="right">-0.14</td>
+<td align="right">NaN</td>
 <td align="right">0.08</td>
 <td align="right">0.30</td>
 <td align="right">0.23</td>
@@ -884,6 +971,9 @@ kable(featureStat)</code></pre>
 <td align="left">ScreenPorch</td>
 <td align="right">0.11</td>
 <td align="right">0.11</td>
+<td align="right">NaN</td>
+<td align="right">0.11</td>
+<td align="right">NaN</td>
 <td align="right">0.05</td>
 <td align="right">0.13</td>
 <td align="right">0.11</td>
@@ -899,6 +989,9 @@ kable(featureStat)</code></pre>
 <td align="left">OverallCond</td>
 <td align="right">-0.10</td>
 <td align="right">0.10</td>
+<td align="right">-0.08</td>
+<td align="right">-0.06</td>
+<td align="right">-0.04</td>
 <td align="right">0.10</td>
 <td align="right">0.32</td>
 <td align="right">0.28</td>
@@ -914,6 +1007,9 @@ kable(featureStat)</code></pre>
 <td align="left">MSSubClass</td>
 <td align="right">-0.08</td>
 <td align="right">0.08</td>
+<td align="right">-0.03</td>
+<td align="right">-0.07</td>
+<td align="right">-0.02</td>
 <td align="right">0.08</td>
 <td align="right">0.28</td>
 <td align="right">0.26</td>
@@ -929,6 +1025,9 @@ kable(featureStat)</code></pre>
 <td align="left">BsmtHalfBath</td>
 <td align="right">-0.05</td>
 <td align="right">0.05</td>
+<td align="right">NaN</td>
+<td align="right">-0.03</td>
+<td align="right">NaN</td>
 <td align="right">0.04</td>
 <td align="right">0.12</td>
 <td align="right">0.11</td>
@@ -943,6 +1042,9 @@ kable(featureStat)</code></pre>
 <td>35</td>
 <td align="left">MoSold</td>
 <td align="right">0.05</td>
+<td align="right">0.05</td>
+<td align="right">0.04</td>
+<td align="right">0.06</td>
 <td align="right">0.05</td>
 <td align="right">0.03</td>
 <td align="right">0.09</td>
@@ -959,6 +1061,9 @@ kable(featureStat)</code></pre>
 <td align="left">X3SsnPorch</td>
 <td align="right">0.04</td>
 <td align="right">0.04</td>
+<td align="right">NaN</td>
+<td align="right">0.05</td>
+<td align="right">NaN</td>
 <td align="right">0.02</td>
 <td align="right">0.05</td>
 <td align="right">0.04</td>
@@ -974,6 +1079,9 @@ kable(featureStat)</code></pre>
 <td align="left">PoolArea</td>
 <td align="right">0.03</td>
 <td align="right">0.03</td>
+<td align="right">NaN</td>
+<td align="right">0.04</td>
+<td align="right">NaN</td>
 <td align="right">0.03</td>
 <td align="right">0.08</td>
 <td align="right">0.07</td>
@@ -989,6 +1097,9 @@ kable(featureStat)</code></pre>
 <td align="left">BsmtFinSF2</td>
 <td align="right">-0.02</td>
 <td align="right">0.02</td>
+<td align="right">NaN</td>
+<td align="right">-0.01</td>
+<td align="right">NaN</td>
 <td align="right">0.06</td>
 <td align="right">0.16</td>
 <td align="right">0.14</td>
@@ -1004,6 +1115,9 @@ kable(featureStat)</code></pre>
 <td align="left">MiscVal</td>
 <td align="right">-0.02</td>
 <td align="right">0.02</td>
+<td align="right">NaN</td>
+<td align="right">-0.01</td>
+<td align="right">NaN</td>
 <td align="right">0.02</td>
 <td align="right">0.07</td>
 <td align="right">0.06</td>
@@ -1019,6 +1133,9 @@ kable(featureStat)</code></pre>
 <td align="left">YrSold</td>
 <td align="right">-0.02</td>
 <td align="right">0.02</td>
+<td align="right">-0.02</td>
+<td align="right">-0.03</td>
+<td align="right">-0.03</td>
 <td align="right">0.03</td>
 <td align="right">0.09</td>
 <td align="right">0.08</td>
@@ -1034,6 +1151,9 @@ kable(featureStat)</code></pre>
 <td align="left">LowQualFinSF</td>
 <td align="right">-0.01</td>
 <td align="right">0.01</td>
+<td align="right">NaN</td>
+<td align="right">-0.02</td>
+<td align="right">NaN</td>
 <td align="right">0.04</td>
 <td align="right">0.12</td>
 <td align="right">0.10</td>
@@ -1074,9 +1194,62 @@ envaluate_model(fit, data)</code></pre>
 envaluate_model(fit_selected, data)</code></pre>
 <pre><code>## [1] 0.1238419</code></pre>
 <pre class="r"><code>#coef(fit_selected)</code></pre>
+<p>Transform</p>
+<ul>
+<li>Log Transform</li>
+<li>Feature range is larger (Area) log(LotArea) + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea)</li>
+</ul>
+<p>Interaction</p>
+<p>For top important features</p>
+<ul>
+<li>OverallQual</li>
+<li>GrLivArea</li>
+<li>GarageCars</li>
+<li>GarageCars</li>
+<li>YearBuilt</li>
+<li>YearRemodAdd</li>
+</ul>
+<p>Collinearity</p>
+<ul>
+<li><p>Year based:</p>
+<p>YearBuilt - GarageYtBlt - YearRemodAdd - OverallQual</p></li>
+<li><p>Area based</p>
+<p>GrLivArea - TotRmsAbvGrd - X2ndFlrSF - FullBath</p>
+<p>TotalBsmtSF - X1stFlrSF - OverallQual - GarageArea</p></li>
+<li><p>Garage</p>
+<p>GarageCars - GarageArea - GarageYtBlt - OverallQual</p></li>
+<li><p>First Floor</p>
+<p>X1stFlrSF - TotalBsmtSF - GrLivArea - GarageArea</p></li>
+<li><p>Second Floor</p>
+<p>X2ndFlrSF - GrLivArea - HalfBath - FullBath</p></li>
+<li><p>Lot</p>
+<p>LotFrontage LotArea</p></li>
+</ul>
 </div>
 <div id="model-selection" class="section level2">
 <h2>Model Selection</h2>
+<pre class="r"><code>fit = lm(log(SalePrice) ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = data)
+
+cal_rmse(log(data$SalePrice), predict(fit, newdata = data))</code></pre>
+<pre><code>## [1] 0.1126879</code></pre>
+<p>AIC</p>
+<pre class="r"><code>fit_aic = step(fit,trace = 0)
+cal_rmse(log(data$SalePrice), predict(fit_aic, newdata = data))</code></pre>
+<pre><code>## [1] 0.1130386</code></pre>
+<p>BIC</p>
+<pre class="r"><code>n = nrow(data)
+
+fit_bic = step(fit,trace = 0, k = log(n))
+
+cal_rmse(log(data$SalePrice), predict(fit_bic, newdata = data))</code></pre>
+<pre><code>## [1] 0.1142158</code></pre>
+<p>Interaction</p>
+<pre class="r"><code>fit = lm(log(SalePrice) ~ .^2, data = data)
+
+cal_rmse(log(data$SalePrice), predict(fit, newdata = data))</code></pre>
+<pre><code>## Warning in predict.lm(fit, newdata = data): prediction from a rank-
+## deficient fit may be misleading</code></pre>
+<pre><code>## [1] 0.08888471</code></pre>
 </div>
 </div>
 
