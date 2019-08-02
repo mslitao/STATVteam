@@ -1,0 +1,155 @@
+---
+title: "Methods"
+author: "taol4"
+date: "8/1/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+## Load the data
+
+```{r}
+train = read.csv("train.csv")
+rownames(train) = train$Id
+#train = train[, -which(names(train) %in% c("Id", "Alley", "Utilities", "Condition1", "Condition2","Exterior1st", "Exterior2nd", "FireplaceQu", "PoolQC", "Fence", "MiscFeature"))]
+
+# remove missing data, which is stored as "?"
+train = subset(train, train$GarageType != "?")
+
+train = train[which(train$GrLivArea < 4000),]
+
+#Fix some NAs
+train$GarageYrBlt[is.na(train$GarageYrBlt)] <- 0
+train$MasVnrArea[is.na(train$MasVnrArea)] <- 0
+train$LotFrontage[is.na(train$LotFrontage)] <- 0
+
+#train = subset(train, select = c("YearBuilt", "LotArea", "Street", "Heating", "CentralAir", "FullBath", "HalfBath", "BedroomAbvGr", "KitchenQual", "GarageType", "SalePrice"))
+
+train = train[, unlist(lapply(train, is.numeric))]
+train = train[, -which(names(train) %in% c("Id"))]
+#str(train)
+```
+
+## Data Processing
+
+```{r}
+#library(car) 
+#scatterplot(SalePrice ~ X1stFlrSF, data=train,  xlab="Square Footage Floor 1", ylab="Sale Price", grid=FALSE)
+
+#colnames(train)
+
+#names(train)
+numericFeatures = names(train)
+numericFeatures = numericFeatures[!numericFeatures %in% c("SalePrice")]
+
+n = length(numericFeatures)
+correlations = rep(0.0, n)
+
+for(i in 1:n){
+  correlations[i] = cor(train[,numericFeatures[i]], train[,"SalePrice"])
+}
+
+
+
+colFeaturesName = rep("", n-1)
+colFeaturesCorr = rep(0.0, n-1)
+
+collinearity_mean3 = rep(0.0, n)
+collinearity_mean5 = rep(0.0, n)
+collinearity_mean = rep(0.0, n)
+
+collinearity_f1 = rep("", n)
+collinearity_f2 = rep("", n)
+collinearity_f3 = rep("", n)
+collinearity_c1 = rep(0.0, n)
+collinearity_c2 = rep(0.0, n)
+collinearity_c3 = rep(0.0, n)
+  
+for(i in 1:n){
+  index = 1
+  for(j in 1:n){
+    if(i != j){
+      colFeaturesCorr[index] = cor(train[,numericFeatures[i]], train[,numericFeatures[j]])
+      colFeaturesName[index] = numericFeatures[j]
+      
+      index = index +1
+      colFeatureStat = data.frame(features = colFeaturesName,
+                                  correlations = colFeaturesCorr,
+                                  abs_correlations = abs(colFeaturesCorr))
+      colFeatureStat = colFeatureStat[order(-colFeatureStat$abs_correlations),]
+      collinearity_mean3[i] = mean(colFeatureStat$abs_correlations[c(1:3)])
+      collinearity_mean5[i] = mean(colFeatureStat$abs_correlations[c(1:5)])
+      collinearity_mean[i] = mean(colFeatureStat$abs_correlations)
+      
+      collinearity_f1[i] = as.character(colFeatureStat$features[1])
+      collinearity_f2[i] = as.character(colFeatureStat$features[2])
+      collinearity_f3[i] = as.character(colFeatureStat$features[3])
+      
+      collinearity_c1[i] = colFeatureStat$correlations[1]
+      collinearity_c2[i] = colFeatureStat$correlations[2]
+      collinearity_c3[i] = colFeatureStat$correlations[3]
+      
+    }
+  }
+  
+}
+
+featureStat = data.frame(features = numericFeatures, 
+                   correlations = round(correlations,2),
+                   abs_correlations = round(abs(correlations),2),
+                   collinearity_mean = round(collinearity_mean,2),
+                   collinearity_mean_top3 = round(collinearity_mean3,2),
+                   collinearity_mean_top5 = round(collinearity_mean5,2),
+                   
+                   collinearity_f1 = collinearity_f1,
+                   collinearity_c1 = round(collinearity_c1,2),
+                   collinearity_f2 = collinearity_f2,
+                   collinearity_c2 = round(collinearity_c2,2),
+                   collinearity_f3 = collinearity_f3,
+                   collinearity_c3 = round(collinearity_c3,2)
+                   )
+featureStat = featureStat[order(-featureStat$abs_correlations),]
+library("knitr")
+kable(featureStat)
+```
+
+
+
+## Feature Selection
+```{r}
+
+
+# Calculate RMSE
+cal_rmse = function(y, y_hat){
+  n = length(y)
+  sqrt(sum((y - y_hat) ^ 2) / n)
+}
+
+envaluate_model = function(model, data){
+  actual = log(data$SalePrice)
+  predicts = log(predict(model, newdata = data))
+  rmse = cal_rmse(actual, predicts)
+  rmse
+}
+
+data = train[, which(names(train) %in% c(as.character(subset(featureStat, featureStat$abs_correlations>0.05)$features), "SalePrice"))]
+
+
+
+fit = lm(SalePrice ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath, data = data)
+#summary(model1)
+envaluate_model(fit, data)
+
+fit_selected = step(fit,trace = 0)
+envaluate_model(fit_selected, data)
+
+
+#coef(fit_selected)
+```
+
+## Model Selection
