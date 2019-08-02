@@ -32,8 +32,11 @@ train$LotFrontage[is.na(train$LotFrontage)] <- 0
 
 train = train[, unlist(lapply(train, is.numeric))]
 train = train[, -which(names(train) %in% c("Id"))]
+
+
 #str(train)
 ```
+
 
 ## Data Processing
 
@@ -55,9 +58,9 @@ correlations_log_log = rep(0.0, n)
 
 for(i in 1:n){
   correlations[i] = cor(train[,numericFeatures[i]], train[,"SalePrice"])
-  correlations_log_na[i] = cor(log(train[,numericFeatures[i]]), train[,"SalePrice"])
+  correlations_log_na[i] = cor(log(train[,numericFeatures[i]] +1), train[,"SalePrice"])
   correlations_na_log[i] = cor(train[,numericFeatures[i]], log(train[,"SalePrice"]))
-  correlations_log_log[i] = cor(log(train[,numericFeatures[i]]), log(train[,"SalePrice"]))
+  correlations_log_log[i] = cor(log(train[,numericFeatures[i]]+1), log(train[,"SalePrice"]))
 }
 
 
@@ -132,6 +135,18 @@ kable(featureStat)
 ## Feature Selection
 
 ```{r}
+set.seed(20190801)
+
+data = train[, which(names(train) %in% c(as.character(subset(featureStat, featureStat$abs_correlations>0.05)$features), "SalePrice"))]
+
+sample <- sample.int(n = nrow(data), size = floor(.7*nrow(data)), replace = F)
+
+training = data[sample,]
+testing  = data[-sample,]
+```
+
+
+```{r}
 # Calculate RMSE
 cal_rmse = function(y, y_hat){
   n = length(y)
@@ -140,21 +155,33 @@ cal_rmse = function(y, y_hat){
 
 envaluate_model = function(model, data){
   actual = log(data$SalePrice)
-  predicts = log(predict(model, newdata = data))
+  predicts = log(predict(model, newdata = data) + 40)
   rmse = cal_rmse(actual, predicts)
   rmse
 }
+```
 
-data = train[, which(names(train) %in% c(as.character(subset(featureStat, featureStat$abs_correlations>0.05)$features), "SalePrice"))]
-
-
-
-fit = lm(SalePrice ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath, data = data)
+```{r}
+fit = lm(SalePrice ~ ., data = training)
 #summary(model1)
-envaluate_model(fit, data)
+envaluate_model(fit, training)
+envaluate_model(fit, testing)
 
 fit_selected = step(fit,trace = 0)
-envaluate_model(fit_selected, data)
+envaluate_model(fit_selected, training)
+envaluate_model(fit_selected, testing)
+
+```
+
+```{r}
+fit = lm(SalePrice ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath, data = training)
+#summary(model1)
+envaluate_model(fit, training)
+envaluate_model(fit, testing)
+
+fit_selected = step(fit,trace = 0)
+envaluate_model(fit_selected, training)
+envaluate_model(fit_selected, testing)
 
 
 #coef(fit_selected)
@@ -209,9 +236,10 @@ Collinearity
 
 
 ```{r}
-fit = lm(log(SalePrice) ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = data)
+fit = lm(log(SalePrice) ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 
-cal_rmse(log(data$SalePrice), predict(fit, newdata = data))
+cal_rmse(log(training$SalePrice), predict(fit, newdata = training))
+cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))
 
 ```
 
@@ -219,7 +247,8 @@ AIC
 
 ```{r}
 fit_aic = step(fit,trace = 0)
-cal_rmse(log(data$SalePrice), predict(fit_aic, newdata = data))
+cal_rmse(log(training$SalePrice), predict(fit_aic, newdata = training))
+cal_rmse(log(testing$SalePrice), predict(fit_aic, newdata = testing))
 ```
 
 BIC
@@ -228,15 +257,19 @@ n = nrow(data)
 
 fit_bic = step(fit,trace = 0, k = log(n))
 
-cal_rmse(log(data$SalePrice), predict(fit_bic, newdata = data))
+cal_rmse(log(training$SalePrice), predict(fit_bic, newdata = training))
+cal_rmse(log(testing$SalePrice), predict(fit_bic, newdata = testing))
 ```
 
 
 Interaction
 
-```{r}
-fit = lm(log(SalePrice) ~ .^2, data = data)
 
-cal_rmse(log(data$SalePrice), predict(fit, newdata = data))
+```{r}
+fit = lm(log(SalePrice) ~ .^2, data = training)
+
+cal_rmse(log(training$SalePrice), predict(fit, newdata = training))
+
+cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))
 ```
 
