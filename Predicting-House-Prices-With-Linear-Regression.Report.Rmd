@@ -676,6 +676,22 @@ get_num_params(fit_final)
 # Results
 
 # Discussion
+In this project, we want to find a suitable model to predict the price of a house given the properties of it. But the original data has 79 predictors, which seems too much for a linear model. So we should do data cleaning at first. We firstly removed predictors that have too many `Nan`, meaning the data may not be available for most houses. Then we split the predictors into factor predictors and numerical predictors.
+
+In numerical predictors, we mainly focused on the colinearity of each predictor with each other. For the predictors that highly colinear related to others, we picked the representative one in our model. For example, `GrageCars` is colinear related to `GarageCars`, `GarageArea`, `GarageYtBlt` etc. This relationship intuitively makes sense. Based on the approach of analyzing data and its practical meaning behind that, we found 5 important features of a house. Our later transformations and interactions are mainly based on the top important predictors.
+
+At the same time, we also investigated the dummy variables. We hope to find a set of dummy variables to convey some information that numerical variables don't have. A dummy variable should have a balanced amount of observations among different levels, and the house price of each level should have an obvious difference. So we selected `CentralAir` and `KitchenQual` as the dummy variable in our model.
+
+Moreover, we did a lot of tuning to make the model to satisfy the equal-variance assumption and normality assumption.
+
+## Parameters of Final Model
+The expression of our final model is
+$$
+log(y) = \beta_1x_{LotFrontage} + ...
+$$
+
+## A prediction example
+We can pick an observation from test set.
 
 # Appendix
 
