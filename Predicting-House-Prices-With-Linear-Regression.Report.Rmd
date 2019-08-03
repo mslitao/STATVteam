@@ -415,6 +415,9 @@ remained_dummy_col_idx = remained_dummy_col_idx[1:length(remained_dummy_col)-1]
 unlist(lapply(lapply(data_dummy[remained_dummy_col_idx], levels), length))
 ```
 
+There are some numerical predictors related to Bsmt, so we don't consider the Bsmt dummy variables. Same reasons for garage.
+To select suitable dummy variables, we want the mean price among levels have a lot difference, and observations of each level have enough amount. So we can plot the barplot of mean price and amout of levels in a particular dummy variable.
+
 ```{r}
 dummy_barplot = function(dummy_col, price_col, amount_factor=100) {
   level_list = levels(dummy_col)
@@ -433,8 +436,9 @@ dummy_barplot(data_dummy$CentralAir, data_dummy$SalePrice)
 dummy_barplot(data_dummy$KitchenQual, data_dummy$SalePrice)
 ```
 
-We want the mean price among levels have a lot difference, and observations of each level have enough amout.
 
+
+## Add dummy variables into Interaction model
 ```{r}
 data_with_dummy_selected = cbind(data_selected, data[, c("CentralAir", "KitchenQual")])
 data_with_dummy_selected = data_with_dummy_selected[!rowSums(is.na(data_with_dummy_selected)),]
@@ -445,7 +449,7 @@ training_with_dummy = data_with_dummy_selected[sample,]
 testing_with_dummy = data_with_dummy_selected[-sample,]
 ```
 
-## Add dummy variables into Interaction model```
+Fit the model.
 ```{r}
 fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training_with_dummy)
 
@@ -463,6 +467,7 @@ cal_rmse(log(testing_with_dummy$SalePrice), predict(fit_aic, newdata = testing_w
 cal_rmse(testing_with_dummy$SalePrice, exp(predict(fit_aic, newdata = testing_with_dummy)))
 ```
 
+We can see a slight improvement of RMSE.
 
 ## Residual diagnostics
 
