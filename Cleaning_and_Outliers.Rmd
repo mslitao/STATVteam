@@ -2,44 +2,35 @@
 
 ```{r}
 train = read.csv("train.csv")
+train_dummy = train[, unlist(lapply(train, is.factor))]
+train_dummy$SalePrice = train$SalePrice
 ```
 
 ## Remove predictors with too many NAN
-Remove predictors having more than 5% of Nan.
+Remove predictors having more than 40% of Nan.
 ```{r}
-num_nan = rep(0, ncol(train))
-for (i in 1:ncol(train)) {
-  num_nan[i] = sum(is.na(train[,i]))
+num_nan = rep(0, ncol(train_dummy))
+for (i in 1:ncol(train_dummy)) {
+  num_nan[i] = sum(is.na(train_dummy[,i]))
 }
-rm_col_idx = which(num_nan/nrow(train) > 0.05)
-colnames(train)[rm_col_idx]
+rm_col_idx = which(num_nan/nrow(train_dummy) > 0.4)
+colnames(train_dummy)[rm_col_idx]
+num_nan[rm_col_idx]/nrow(train_dummy)
 ```
-Above are 11 predictors that should be removed.
+Above are 5 dummy predictors that should be removed due to too many Nan.
+That make sence because not too many houses have above features.
 
 ## Remove rows containing NAN
 ```{r}
-train = train[,-rm_col_idx]
-train = train[!rowSums(is.na(train)),]
+train_dummy = train_dummy[,-rm_col_idx]
+train_dummy = train_dummy[!rowSums(is.na(train_dummy)),]
 ```
+122 observations containing Nan are removed. There are still 38 dummy predictors, and we want to remove most of them.
 
-## How many dummy variables in the remaining data
+## Remove predictors that have too many levels
 ```{r}
-
-# can't find a more efficient way ...
-find_factor_idx = function(dataset) {
-  is_factor_list = rep(FALSE, ncol(train))
-  for (i in 1:ncol(dataset)) {
-    if (is.factor(dataset[,i])) {
-      is_factor_list[i] = TRUE
-    }
-  }
-  which(is_factor_list)
-}
-factor_col_idx = find_factor_idx(train)
-length(factor_col_idx)
-numeric_train = train[,-factor_col_idx]
+unlist(lapply(lapply(train_dummy, levels), length))
 ```
-We have 34 factor predictors. Want to remove 20 of them.
 
 If a particular level in a factor occupies too much ratio, like 80%, or a particular level in a factor occupies to little, like 2%, we may think the factor predictor is useless.
 ```{r}
@@ -54,41 +45,54 @@ extreme_level_amount = function(vec) {
   c(max_amount, min_amount)
 }
 # find the amount of max-level of each factor
-max_level_amount_list = rep(0, length(factor_col_idx))
-min_level_amount_list = rep(0, length(factor_col_idx))
-for (i in 1:length(factor_col_idx)) {
-  col_idx = factor_col_idx[i]
-  max_level_amount_list[i] = extreme_level_amount(train[,col_idx])[1]
-  min_level_amount_list[i] = extreme_level_amount(train[,col_idx])[2]
+max_level_amount_list = rep(0, length(colnames(train_dummy))-1)
+min_level_amount_list = rep(0, length(colnames(train_dummy))-1)
+for (i in 1:length(colnames(train_dummy))-1) {
+  max_level_amount_list[i] = extreme_level_amount(train_dummy[,i])[1]
+  min_level_amount_list[i] = extreme_level_amount(train_dummy[,i])[2]
 }
-rm_col_idx2 = factor_col_idx[which((max_level_amount_list/nrow(train)>0.8) | (min_level_amount_list/nrow(train)<0.02))]
-length(rm_col_idx2)
-rm_col_idx3 = factor_col_idx[which(max_level_amount_list/nrow(train)>0.8)]
-length(rm_col_idx3)
-```
-Well, 30 factor predictors will be removed if we apply upper and lower limits. If only the upper limit is applied, 18 factor predictors will be remove. At this moment we will only consider the upper limit.
-Whether lower limit should be considered will be left for discussion.
-
-```{r}
-train = train[,-rm_col_idx3]
+rm_col_idx2 = which(max_level_amount_list/nrow(train_dummy)>0.8)
+rm_col_idx3 = which(min_level_amount_list/nrow(train_dummy)<0.02)
 ```
 
-Let's look at number of level of each factor predictor
 ```{r}
-factor_col_idx = find_factor_idx(train)
-num_of_levels = rep(0, length(factor_col_idx))
-for (i in 1:length(factor_col_idx)) {
-  col_idx = factor_col_idx[i]
-  num_of_levels[i] = length(levels(train[,col_idx]))
+rm_col_idx23 = sort(unique(c(rm_col_idx2, rm_col_idx3)))
+```
+
+
+```{r}
+library("knitr")
+col_ratio_table = data.frame(col_name = colnames(train_dummy)[rm_col_idx2],
+                             max_level_ratio = max_level_amount_list[rm_col_idx2]/nrow(train_dummy))
+#colnames(train_dummy)[rm_col_idx2]
+#max_level_amount_list[rm_col_idx2]/nrow(train_dummy)
+kable(col_ratio_table)
+#train_dummy = train_dummy[,-rm_col_idx2]
+```
+
+```{r}
+dummy_hist = function(dummy_col, price_col, amount_factor=100) {
+  level_list = levels(dummy_col)
+  price_list = rep(0, length(level_list))
+  amount_list = rep(0, length(level_list))
+  for (i in 1:length(level_list)) {
+    lv = level_list[i]
+    row_idx = which(dummy_col==lv)
+    price_list[i] = mean(price_col[row_idx])
+    amount_list[i] = length(row_idx)
+  }
+  barplot(rbind(price_list, amount_list*amount_factor), beside = TRUE, names.arg=level_list)
 }
-num_of_levels
+dummy_hist(train_dummy$BsmtQual, train_dummy$SalePrice)
+dummy_hist(train_dummy$GarageFinish, train_dummy$SalePrice)
+dummy_hist(train_dummy$ExterQual, train_dummy$SalePrice)
+dummy_hist(train_dummy$SaleCondition, train_dummy$SalePrice)
 ```
-We may remove the predictor that has too many levels.
 ```{r}
-rm_col_idx = factor_col_idx[which(num_of_levels > 6)]
-train = train[, -rm_col_idx]
+dummy_hist(train_dummy$HeatingQC, train_dummy$SalePrice)
+dummy_hist(train_dummy$CentralAir, train_dummy$SalePrice)
+dummy_hist(train_dummy$KitchenQual, train_dummy$SalePrice)
 ```
-
 
 ## Correlation
 ```{r}
