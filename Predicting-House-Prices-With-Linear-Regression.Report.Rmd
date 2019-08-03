@@ -162,13 +162,12 @@ data = data[, -which(names(data) %in% c("Id"))]
 
 ```
 
-## Outlier diagnostics
+We want to make some value cleaning and fix invalid data values in the data.
 ```{r}
 # remove missing data, which is stored as "?"
 data = subset(data, data$GarageType != "?")
 
-#Remove outliers that has larger GrLivArea more than 4000
-data = data[which(data$GrLivArea < 4000),]
+
 
 #Fix some NAs
 data$GarageYrBlt[is.na(data$GarageYrBlt)] = 1
@@ -212,7 +211,26 @@ featureStat = data.frame(features = numericFeatures,
                    )
 featureStat = featureStat[order(-featureStat$abs_correlations),]
 library("knitr")
-kable(featureStat)
+kable(head(featureStat, 10))
+```
+
+Based on the predictor correlation analysis. Let's plot the charts to understand how these top predictors correlated to the response. Here we picked **OverallQual**,  **GrLivArea**, **GarageCars**, **TotalBsmtSF**, **X1stFlrSF**, **GarageArea**, **FullBath**, **YearBuilt**
+
+```{r fig.height=6, fig.width=14}
+par(mfrow = c(2, 4))
+plot(SalePrice ~ OverallQual, data = data, col = "darkorange", pch = 20,main = "SalePrice VS OverallQual")
+plot(SalePrice ~ GrLivArea, data = data, col = "darkorange", pch = 20,main = "SalePrice VS GrLivArea")
+plot(SalePrice ~ GarageCars, data = data, col = "darkorange", pch = 20,main = "SalePrice VS GarageCars")
+plot(SalePrice ~ TotalBsmtSF, data = data, col = "darkorange", pch = 20,main = "SalePrice VS TotalBsmtSF")
+plot(SalePrice ~ X1stFlrSF, data = data, col = "darkorange", pch = 20,main = "SalePrice VS X1stFlrSF")
+plot(SalePrice ~ GarageArea, data = data, col = "darkorange", pch = 20,main = "SalePrice VS GarageArea")
+plot(SalePrice ~ FullBath, data = data, col = "darkorange", pch = 20,main = "SalePrice VS FullBath")
+plot(SalePrice ~ YearBuilt, data = data, col = "darkorange", pch = 20,main = "SalePrice VS YearBuilt")
+```
+
+```{r}
+#Remove outliers that has larger GrLivArea more than 4000
+data = data[which(data$GrLivArea < 4000),]
 ```
 
 ### Collinearity Analysis
@@ -273,7 +291,11 @@ evaluate_model = function(fit, data, response_log = FALSE){
 ```{r}
 set.seed(20190801)
 
-data_selected = data_numeric[, which(names(data_numeric) %in% c(as.character(subset(featureStat, featureStat$abs_correlations>0.05)$features), "SalePrice"))]
+selected_columns = c(as.character(subset(featureStat, featureStat$abs_correlations>0.05)$features), "SalePrice","CentralAir", "KitchenQual")
+
+
+data_selected = data[, which(names(data) %in% selected_columns)]
+
 
 sample = sample.int(n = nrow(data_selected), size = floor(.7*nrow(data_selected)), replace = F)
 
@@ -445,23 +467,15 @@ dummy_barplot(data_dummy$KitchenQual, data_dummy$SalePrice)
 
 
 ## Add dummy variables into Interaction model
-```{r}
-data_with_dummy_selected = cbind(data_selected, data[, c("CentralAir", "KitchenQual", "SaleType")])
-data_with_dummy_selected = data_with_dummy_selected[!rowSums(is.na(data_with_dummy_selected)),]
 
-sample = sample.int(n = nrow(data_with_dummy_selected), size = floor(.7*nrow(data_with_dummy_selected)), replace = F)
-
-training_with_dummy = data_with_dummy_selected[sample,]
-testing_with_dummy = data_with_dummy_selected[-sample,]
-```
 
 Fit the model.
 ```{r}
-fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training_with_dummy)
+fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 
 df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
-                Train = evaluate_model(fit, training_with_dummy, TRUE),
-                Test = evaluate_model(fit, testing_with_dummy, TRUE))
+                Train = evaluate_model(fit, training, TRUE),
+                Test = evaluate_model(fit, testing, TRUE))
 
 kable(df)
 
@@ -479,8 +493,8 @@ We can see a slight improvement of RMSE.
 fit_aic = step(fit,trace = 0)
 
 df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
-                Train = evaluate_model(fit_aic, training_with_dummy, TRUE),
-                Test = evaluate_model(fit_aic, testing_with_dummy, TRUE))
+                Train = evaluate_model(fit_aic, training, TRUE),
+                Test = evaluate_model(fit_aic, testing, TRUE))
 
 kable(df)
 
@@ -488,8 +502,10 @@ kable(df)
 fit_final = fit_aic
 ```
 
-```{r}
 
+## Outlier diagnostics
+
+```{r}
 
 fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond + 
     YearBuilt  + BsmtFinSF1 + TotalBsmtSF + 
@@ -498,11 +514,11 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
     OpenPorchSF + ScreenPorch + CentralAir + KitchenQual + log(LotArea) + 
     log(GrLivArea):YearBuilt + log(GarageArea) + I(X1stFlrSF^2)+
     OverallQual:MasVnrArea + X2ndFlrSF:Fireplaces:YearBuilt, 
-    data = training_with_dummy)
+    data = training)
 
 df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
-                Train = evaluate_model(fit, training_with_dummy, TRUE),
-                Test = evaluate_model(fit, testing_with_dummy, TRUE))
+                Train = evaluate_model(fit, training, TRUE),
+                Test = evaluate_model(fit, testing, TRUE))
 df
 
 cd_fit = cooks.distance(fit)
@@ -515,13 +531,13 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
     OpenPorchSF + ScreenPorch + CentralAir + KitchenQual + log(LotArea) + 
     log(GrLivArea):YearBuilt + log(GarageArea) + I(X1stFlrSF^2)+
     OverallQual:MasVnrArea + X2ndFlrSF:Fireplaces:YearBuilt, 
-    data = training_with_dummy,
+    data = training,
     subset = cd_fit <= 4 / length(cd_fit)
     )
 
 df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
-                Train = evaluate_model(fit, training_with_dummy, TRUE),
-                Test = evaluate_model(fit, testing_with_dummy, TRUE))
+                Train = evaluate_model(fit, training, TRUE),
+                Test = evaluate_model(fit, testing, TRUE))
 
 library(faraway)
 #df
