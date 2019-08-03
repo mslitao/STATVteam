@@ -14,6 +14,10 @@ urlcolor: cyan
 - Chun Yue Shek (cyshek2)
 - Wanlin Yang (wanliny2)
 
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+options(scipen = 1, digits = 4, width = 80, fig.alin = "center")
+```
+
 # Introduction
 
 **Predicting House Prices With Linear Regression**
@@ -243,9 +247,25 @@ kable(featureStat)
 ### Define metrics calculation
 ```{r}
 # Calculate RMSE
-cal_rmse = function(y, y_hat){
+rmse = function(y, y_hat){
   n = length(y)
   sqrt(sum((y - y_hat) ^ 2) / n)
+}
+
+evaluate_model = function(fit, data, response_log = FALSE){
+  predicts = predict(fit, newdata = data)
+  predicts[predicts<1] = 1
+  
+  r2 = summary(fit)$r.squared
+  if(response_log){
+    rmse_log = rmse(log(data$SalePrice), predicts)
+    rmse = rmse(data$SalePrice, exp(predicts))
+  }
+  else{
+    rmse_log = rmse(log(data$SalePrice), log(predicts))
+    rmse = rmse(data$SalePrice, predicts)
+  }
+  c(rmse, rmse_log, r2)
 }
 ```
 
@@ -265,21 +285,21 @@ testing  = data_selected[-sample,]
 
 ```{r}
 fit = lm(SalePrice ~ ., data = training)
-#summary(model1)
 
 # RMSE on train and test data, log and raw
-cal_rmse(log(training$SalePrice), log(predict(fit, newdata = training)))
-cal_rmse(training$SalePrice, predict(fit, newdata = training))
-cal_rmse(log(testing$SalePrice), log(predict(fit, newdata = testing)))
-cal_rmse(testing$SalePrice, predict(fit, newdata = testing))
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+                Train = evaluate_model(fit,training),
+                Test = evaluate_model(fit,testing))
+
+kable(df)
 
 # AIC
 fit_aic = step(fit,trace = 0)
-cal_rmse(log(training$SalePrice), log(predict(fit_aic, newdata = training)))
-cal_rmse(training$SalePrice, predict(fit_aic, newdata = training))
-cal_rmse(log(testing$SalePrice), log(predict(fit_aic, newdata = testing)))
-cal_rmse(testing$SalePrice, predict(fit_aic, newdata = testing))
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+                Train = evaluate_model(fit_aic,training),
+                Test = evaluate_model(fit_aic,testing))
 
+kable(df)
 ```
 
 ## Tranformations
@@ -293,20 +313,11 @@ fit = lm(log(SalePrice) ~ ., data = training)
 #summary(model1)
 
 # RMSE on train and test data, log and raw
-cal_rmse(log(training$SalePrice), predict(fit, newdata = training))
-cal_rmse(training$SalePrice, exp(predict(fit, newdata = training)))
-cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))
-cal_rmse(testing$SalePrice, exp(predict(fit, newdata = testing)))
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+                Train = evaluate_model(fit, training, TRUE),
+                Test = evaluate_model(fit, testing, TRUE))
 
-# AIC
-fit_aic = step(fit,trace = 0)
-
-cal_rmse(log(training$SalePrice), predict(fit_aic, newdata = training))
-cal_rmse(training$SalePrice, exp(predict(fit_aic, newdata = training)))
-cal_rmse(log(testing$SalePrice), predict(fit_aic, newdata = testing))
-cal_rmse(testing$SalePrice, exp(predict(fit_aic, newdata = testing)))
-
-#TODO: Use the table to visualize the results.
+kable(df)
 ```
 
 We can see that with transofrmation to the response, there's a significant improvement.
@@ -319,11 +330,13 @@ log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea)
 ```{r}
 fit = lm(log(SalePrice) ~ . + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = training)
 
-cal_rmse(log(training$SalePrice), predict(fit, newdata = training))
-cal_rmse(training$SalePrice, exp(predict(fit, newdata = training)))
-cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))
-cal_rmse(testing$SalePrice, exp(predict(fit, newdata = testing)))
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+                Train = evaluate_model(fit, training, TRUE),
+                Test = evaluate_model(fit, testing, TRUE))
+
+kable(df)
 ```
+
 We can see slightly improvemtn by applying tranformation to predictors. <TODO> add more analysis here.
 
 ## Interaction
@@ -340,18 +353,11 @@ For top important features
 ```{r}
 fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 
-cal_rmse(log(training$SalePrice), predict(fit, newdata = training))
-cal_rmse(training$SalePrice, exp(predict(fit, newdata = training)))
-cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))
-cal_rmse(testing$SalePrice, exp(predict(fit, newdata = testing)))
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+                Train = evaluate_model(fit, training, TRUE),
+                Test = evaluate_model(fit, testing, TRUE))
 
-# AIC
-fit_aic = step(fit,trace = 0)
-
-cal_rmse(log(training$SalePrice), predict(fit_aic, newdata = training))
-cal_rmse(training$SalePrice, exp(predict(fit_aic, newdata = training)))
-cal_rmse(log(testing$SalePrice), predict(fit_aic, newdata = testing))
-cal_rmse(testing$SalePrice, exp(predict(fit_aic, newdata = testing)))
+kable(df)
 ```
 
 ## Dummy Variables
@@ -410,7 +416,7 @@ We can see how many levels of each remained dummy variable.
 ```{r}
 rm_unbalanced_col_idx = sort(unique(c(rm_unbalanced_col_idx1, rm_unbalanced_col_idx2)))
 remained_dummy_col_idx = seq(1:ncol(data_dummy))[-rm_unbalanced_col_idx]
-remained_dummy_col_idx = remained_dummy_col_idx[1:length(remained_dummy_col)-1]
+remained_dummy_col_idx = remained_dummy_col_idx[1:length(remained_dummy_col_idx)-1]
 
 unlist(lapply(lapply(data_dummy[remained_dummy_col_idx], levels), length))
 ```
@@ -451,20 +457,15 @@ testing_with_dummy = data_with_dummy_selected[-sample,]
 
 Fit the model.
 ```{r}
-fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training_with_dummy)
+fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training_with_dummy)
 
-cal_rmse(log(training_with_dummy$SalePrice), predict(fit, newdata = training_with_dummy))
-cal_rmse(training_with_dummy$SalePrice, exp(predict(fit, newdata = training_with_dummy)))
-cal_rmse(log(testing_with_dummy$SalePrice), predict(fit, newdata = testing_with_dummy))
-cal_rmse(testing_with_dummy$SalePrice, exp(predict(fit, newdata = testing_with_dummy)))
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+                Train = evaluate_model(fit, training_with_dummy, TRUE),
+                Test = evaluate_model(fit, testing_with_dummy, TRUE))
 
-# AIC
-fit_aic = step(fit,trace = 0)
+kable(df)
 
-cal_rmse(log(training_with_dummy$SalePrice), predict(fit_aic, newdata = training_with_dummy))
-cal_rmse(training_with_dummy$SalePrice, exp(predict(fit_aic, newdata = training_with_dummy)))
-cal_rmse(log(testing_with_dummy$SalePrice), predict(fit_aic, newdata = testing_with_dummy))
-cal_rmse(testing_with_dummy$SalePrice, exp(predict(fit_aic, newdata = testing_with_dummy)))
+
 ```
 
 We can see a slight improvement of RMSE.
@@ -474,7 +475,16 @@ We can see a slight improvement of RMSE.
 ## Model selection
 
 ```{r}
-fit_final = fit
+# AIC
+fit_aic = step(fit,trace = 0)
+
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+                Train = evaluate_model(fit_aic, training_with_dummy, TRUE),
+                Test = evaluate_model(fit_aic, testing_with_dummy, TRUE))
+
+kable(df)
+
+fit_final = fit_aic
 ```
 
 ## Variance Inflation Factor (VIF) 
