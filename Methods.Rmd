@@ -174,7 +174,7 @@ envaluate_model(fit_selected, testing)
 ```
 
 ```{r}
-fit = lm(SalePrice ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath, data = training)
+fit = lm(SalePrice ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 #summary(model1)
 envaluate_model(fit, training)
 envaluate_model(fit, testing)
@@ -236,7 +236,9 @@ Collinearity
 
 
 ```{r}
-fit = lm(log(SalePrice) ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
+#fit = lm(log(SalePrice) ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath + GrLivArea:OverallQual + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
+
+fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 
 cal_rmse(log(training$SalePrice), predict(fit, newdata = training))
 cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))
@@ -249,6 +251,8 @@ AIC
 fit_aic = step(fit,trace = 0)
 cal_rmse(log(training$SalePrice), predict(fit_aic, newdata = training))
 cal_rmse(log(testing$SalePrice), predict(fit_aic, newdata = testing))
+
+fit_aic
 ```
 
 BIC

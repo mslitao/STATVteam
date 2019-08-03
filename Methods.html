@@ -1203,17 +1203,17 @@ envaluate_model(fit_selected, training)</code></pre>
 <pre><code>## [1] 0.3382575</code></pre>
 <pre class="r"><code>envaluate_model(fit_selected, testing)</code></pre>
 <pre><code>## [1] 0.1871632</code></pre>
-<pre class="r"><code>fit = lm(SalePrice ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath, data = training)
+<pre class="r"><code>fit = lm(SalePrice ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 #summary(model1)
 envaluate_model(fit, training)</code></pre>
-<pre><code>## [1] 0.1230103</code></pre>
+<pre><code>## [1] 0.1135938</code></pre>
 <pre class="r"><code>envaluate_model(fit, testing)</code></pre>
-<pre><code>## [1] 0.1281118</code></pre>
+<pre><code>## [1] 0.1288002</code></pre>
 <pre class="r"><code>fit_selected = step(fit,trace = 0)
 envaluate_model(fit_selected, training)</code></pre>
-<pre><code>## [1] 0.1228912</code></pre>
+<pre><code>## [1] 0.114489</code></pre>
 <pre class="r"><code>envaluate_model(fit_selected, testing)</code></pre>
-<pre><code>## [1] 0.1277318</code></pre>
+<pre><code>## [1] 0.1286505</code></pre>
 <pre class="r"><code>#coef(fit_selected)</code></pre>
 <p>Transform</p>
 <ul>
@@ -1249,27 +1249,29 @@ envaluate_model(fit_selected, training)</code></pre>
 </div>
 <div id="model-selection" class="section level2">
 <h2>Model Selection</h2>
-<pre class="r"><code>fit = lm(log(SalePrice) ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
+<pre class="r"><code>#fit = lm(log(SalePrice) ~ . + YearBuilt:OverallQual + YearRemodAdd:OverallQual + OverallQual:TotalBsmtSF + OverallQual:GrLivArea + OverallQual:FullBath + GrLivArea:OverallQual + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
+
+fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 
 cal_rmse(log(training$SalePrice), predict(fit, newdata = training))</code></pre>
-<pre><code>## [1] 0.1102371</code></pre>
+<pre><code>## [1] 0.1060796</code></pre>
 <pre class="r"><code>cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))</code></pre>
-<pre><code>## [1] 0.120771</code></pre>
+<pre><code>## [1] 0.1210036</code></pre>
 <p>AIC</p>
 <pre class="r"><code>fit_aic = step(fit,trace = 0)
 cal_rmse(log(training$SalePrice), predict(fit_aic, newdata = training))</code></pre>
-<pre><code>## [1] 0.1104954</code></pre>
+<pre><code>## [1] 0.106898</code></pre>
 <pre class="r"><code>cal_rmse(log(testing$SalePrice), predict(fit_aic, newdata = testing))</code></pre>
-<pre><code>## [1] 0.1207188</code></pre>
+<pre><code>## [1] 0.121483</code></pre>
 <p>BIC</p>
 <pre class="r"><code>n = nrow(data)
 
 fit_bic = step(fit,trace = 0, k = log(n))
 
 cal_rmse(log(training$SalePrice), predict(fit_bic, newdata = training))</code></pre>
-<pre><code>## [1] 0.1139024</code></pre>
+<pre><code>## [1] 0.1107509</code></pre>
 <pre class="r"><code>cal_rmse(log(testing$SalePrice), predict(fit_bic, newdata = testing))</code></pre>
-<pre><code>## [1] 0.1222656</code></pre>
+<pre><code>## [1] 0.1235973</code></pre>
 <p>Interaction</p>
 <pre class="r"><code>fit = lm(log(SalePrice) ~ .^2, data = training)
 
