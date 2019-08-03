@@ -446,7 +446,7 @@ dummy_barplot(data_dummy$KitchenQual, data_dummy$SalePrice)
 
 ## Add dummy variables into Interaction model
 ```{r}
-data_with_dummy_selected = cbind(data_selected, data[, c("CentralAir", "KitchenQual")])
+data_with_dummy_selected = cbind(data_selected, data[, c("CentralAir", "KitchenQual", "SaleType")])
 data_with_dummy_selected = data_with_dummy_selected[!rowSums(is.na(data_with_dummy_selected)),]
 
 sample = sample.int(n = nrow(data_with_dummy_selected), size = floor(.7*nrow(data_with_dummy_selected)), replace = F)
@@ -490,11 +490,11 @@ fit_final = fit_aic
 
 ```{r}
 fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond + 
-    YearBuilt  + BsmtFinSF1 + TotalBsmtSF  + 
+    YearBuilt  + BsmtFinSF1 + TotalBsmtSF + 
     log(X2ndFlrSF +1) + BsmtFullBath + FullBath + HalfBath + 
     KitchenAbvGr + Fireplaces + GarageCars  + WoodDeckSF + 
     OpenPorchSF + ScreenPorch + CentralAir + KitchenQual + log(LotArea) + 
-    log(GrLivArea) + I(X1stFlrSF^2) + log(GarageArea) + 
+    log(GrLivArea):SaleType + log(GarageArea) + I(X1stFlrSF^2)+
     OverallQual:MasVnrArea + X2ndFlrSF:Fireplaces:YearBuilt, 
     data = training_with_dummy)
 
@@ -503,7 +503,8 @@ df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
                 Test = evaluate_model(fit, testing_with_dummy, TRUE))
 df
 library(faraway)
-vif(fit)
+#df
+#vif(fit)
 
 fit_final = fit
 
