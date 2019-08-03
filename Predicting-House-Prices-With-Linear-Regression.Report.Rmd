@@ -255,7 +255,7 @@ set.seed(20190801)
 
 data_selected = data_numeric[, which(names(data_numeric) %in% c(as.character(subset(featureStat, featureStat$abs_correlations>0.05)$features), "SalePrice"))]
 
-sample <- sample.int(n = nrow(data_selected), size = floor(.7*nrow(data_selected)), replace = F)
+sample = sample.int(n = nrow(data_selected), size = floor(.7*nrow(data_selected)), replace = F)
 
 training = data_selected[sample,]
 testing  = data_selected[-sample,]
@@ -282,12 +282,7 @@ cal_rmse(testing$SalePrice, predict(fit_aic, newdata = testing))
 
 ```
 
-
-## Dummy variables
-@Wanlin to add more details
-
 ## Tranformations
-
 
 ### Response Tranformations 
 
@@ -359,7 +354,120 @@ cal_rmse(log(testing$SalePrice), predict(fit_aic, newdata = testing))
 cal_rmse(testing$SalePrice, exp(predict(fit_aic, newdata = testing)))
 ```
 
+## Dummy Variables
 
+```{r}
+data_dummy = data[, unlist(lapply(data, is.factor))]
+data_dummy$SalePrice = data$SalePrice
+```
+
+### Remove predictors with too many Nan
+Remove predictors having more than 40% of Nan.
+```{r}
+num_nan = rep(0, ncol(data_dummy))
+for (i in 1:ncol(data_dummy)) {
+  num_nan[i] = sum(is.na(data_dummy[,i]))
+}
+rm_col_idx = which(num_nan/nrow(data_dummy) > 0.4)
+colnames(data_dummy)[rm_col_idx]
+num_nan[rm_col_idx]/nrow(data_dummy)
+```
+Above are 5 dummy predictors that should be removed due to too many Nan.
+That make sence because few houses have above features.
+
+```{r}
+# remove rows containing Nan
+data_dummy = data_dummy[,-rm_col_idx]
+data_dummy = data_dummy[!rowSums(is.na(data_dummy)),]
+```
+
+### Remove unbalanced dummy variables
+
+If a particular level in a factor occupies too much ratio, like 99%, or a particular level in a factor occupies to little, like 1%, we may think the factor predictor is not helpful.
+```{r}
+# function of finding the max amount of level of one factor column
+extreme_level_amount = function(vec) {
+  max_amount = 0
+  min_amount = length(vec)
+  for (lv in levels(vec)) {
+    max_amount = max(max_amount, sum(vec==lv))
+    min_amount = min(min_amount, sum(vec==lv))
+  }
+  c(max_amount, min_amount)
+}
+# find the amount of max-level of each factor
+max_level_amount_list = rep(0, length(colnames(data_dummy))-1)
+min_level_amount_list = rep(0, length(colnames(data_dummy))-1)
+for (i in 1:length(colnames(data_dummy))-1) {
+  max_level_amount_list[i] = extreme_level_amount(data_dummy[,i])[1]
+  min_level_amount_list[i] = extreme_level_amount(data_dummy[,i])[2]
+}
+rm_unbalanced_col_idx1 = which(max_level_amount_list/nrow(data_dummy)>0.99)
+rm_unbalanced_col_idx2 = which(min_level_amount_list/nrow(data_dummy)<0.01)
+```
+
+We can see how many levels of each remained dummy variable.
+```{r}
+rm_unbalanced_col_idx = sort(unique(c(rm_unbalanced_col_idx1, rm_unbalanced_col_idx2)))
+remained_dummy_col_idx = seq(1:ncol(data_dummy))[-rm_unbalanced_col_idx]
+remained_dummy_col_idx = remained_dummy_col_idx[1:length(remained_dummy_col)-1]
+
+unlist(lapply(lapply(data_dummy[remained_dummy_col_idx], levels), length))
+```
+
+There are some numerical predictors related to Bsmt, so we don't consider the Bsmt dummy variables. Same reasons for garage.
+To select suitable dummy variables, we want the mean price among levels have a lot difference, and observations of each level have enough amount. So we can plot the barplot of mean price and amout of levels in a particular dummy variable.
+
+```{r}
+dummy_barplot = function(dummy_col, price_col, amount_factor=100) {
+  level_list = levels(dummy_col)
+  price_list = rep(0, length(level_list))
+  amount_list = rep(0, length(level_list))
+  for (i in 1:length(level_list)) {
+    lv = level_list[i]
+    row_idx = which(dummy_col==lv)
+    price_list[i] = mean(price_col[row_idx])
+    amount_list[i] = length(row_idx)
+  }
+  barplot(rbind(price_list, amount_list*amount_factor), beside = TRUE, names.arg=level_list, xlab = "Levels", ylab = "Value", col = c("gray20", "gray80"))
+  legend("top", c("Mean Price", "Amount x100"), lwd=15, col = c("gray20", "gray80"))
+}
+dummy_barplot(data_dummy$CentralAir, data_dummy$SalePrice)
+dummy_barplot(data_dummy$KitchenQual, data_dummy$SalePrice)
+```
+
+
+
+## Add dummy variables into Interaction model
+```{r}
+data_with_dummy_selected = cbind(data_selected, data[, c("CentralAir", "KitchenQual")])
+data_with_dummy_selected = data_with_dummy_selected[!rowSums(is.na(data_with_dummy_selected)),]
+
+sample = sample.int(n = nrow(data_with_dummy_selected), size = floor(.7*nrow(data_with_dummy_selected)), replace = F)
+
+training_with_dummy = data_with_dummy_selected[sample,]
+testing_with_dummy = data_with_dummy_selected[-sample,]
+```
+
+Fit the model.
+```{r}
+fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training_with_dummy)
+
+cal_rmse(log(training_with_dummy$SalePrice), predict(fit, newdata = training_with_dummy))
+cal_rmse(training_with_dummy$SalePrice, exp(predict(fit, newdata = training_with_dummy)))
+cal_rmse(log(testing_with_dummy$SalePrice), predict(fit, newdata = testing_with_dummy))
+cal_rmse(testing_with_dummy$SalePrice, exp(predict(fit, newdata = testing_with_dummy)))
+
+# AIC
+fit_aic = step(fit,trace = 0)
+
+cal_rmse(log(training_with_dummy$SalePrice), predict(fit_aic, newdata = training_with_dummy))
+cal_rmse(training_with_dummy$SalePrice, exp(predict(fit_aic, newdata = training_with_dummy)))
+cal_rmse(log(testing_with_dummy$SalePrice), predict(fit_aic, newdata = testing_with_dummy))
+cal_rmse(testing_with_dummy$SalePrice, exp(predict(fit_aic, newdata = testing_with_dummy)))
+```
+
+We can see a slight improvement of RMSE.
 
 
 
