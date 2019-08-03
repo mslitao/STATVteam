@@ -413,8 +413,13 @@ evaluate_model = function(fit, data, response_log = FALSE){
     rmse_log = rmse(log(data$SalePrice), log(predicts))
     rmse = rmse(data$SalePrice, predicts)
   }
-  c(rmse, rmse_log, get_loocv_rmse(fit), r2, get_adj_r2(fit), get_bp_decision(fit, alpha), get_sw_decision(fit, alpha), get_num_params(fit))
+  c(rmse, rmse_log, get_loocv_rmse(fit), r2, get_adj_r2(fit), 
+    get_bp_decision(fit, alpha), bptest(fit)$p.value,
+    get_sw_decision(fit, alpha), shapiro.test(resid(fit))$p.value,
+    get_num_params(fit))
 }
+
+evaluate_model_name = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "bp_p_value", "sw_decision", "sw_p_value", "num_params")
 ```
 
 ### Training and Testing Data
@@ -439,7 +444,7 @@ testing  = data_selected[-sample,]
 fit = lm(SalePrice ~ ., data = training)
 
 # RMSE on train and test data, log and raw
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
+df = data.frame(Measure = evaluate_model_name,
                 Train = evaluate_model(fit,training),
                 Test = evaluate_model(fit,testing))
 
@@ -447,7 +452,7 @@ kable(df)
 
 # AIC
 fit_aic = step(fit,trace = 0)
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
+df = data.frame(Measure = evaluate_model_name,
                 Train = evaluate_model(fit_aic,training),
                 Test = evaluate_model(fit_aic,testing))
 
@@ -465,7 +470,7 @@ fit = lm(log(SalePrice) ~ ., data = training)
 #summary(model1)
 
 # RMSE on train and test data, log and raw
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
+df = data.frame(Measure = evaluate_model_name,
                 Train = evaluate_model(fit, training, TRUE),
                 Test = evaluate_model(fit, testing, TRUE))
 
@@ -482,7 +487,7 @@ log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea)
 ```{r}
 fit = lm(log(SalePrice) ~ . + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = training)
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
+df = data.frame(Measure = evaluate_model_name,
                 Train = evaluate_model(fit, training, TRUE),
                 Test = evaluate_model(fit, testing, TRUE))
 
@@ -505,7 +510,7 @@ For top important features
 ```{r}
 fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
+df = data.frame(Measure = evaluate_model_name,
                 Train = evaluate_model(fit, training, TRUE),
                 Test = evaluate_model(fit, testing, TRUE))
 
@@ -520,7 +525,7 @@ kable(df)
 fit_aic = step(fit,trace = 0)
 
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
+df = data.frame(Measure = evaluate_model_name,
                 Train = evaluate_model(fit_aic, training, TRUE),
                 Test = evaluate_model(fit_aic, testing, TRUE))
 
@@ -542,7 +547,7 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
     data = training)
 
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
+df = data.frame(Measure = evaluate_model_name,
                 Train = evaluate_model(fit, training, TRUE),
                 Test = evaluate_model(fit, testing, TRUE))
 df
@@ -562,14 +567,31 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
     )
 
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
+df = data.frame(Measure = evaluate_model_name,
                 Train = evaluate_model(fit, training, TRUE),
                 Test = evaluate_model(fit, testing, TRUE))
 
 kable(df)
+```
 
+```{r}
+#single table comparsion of the model 
+df = data.frame(Measure = evaluate_model_name,
+                fit_Train = evaluate_model(fit, training_with_dummy, TRUE),
+                fit_Test = evaluate_model(fit, testing_with_dummy, TRUE),
+                fit_aic_Train = evaluate_model(fit_aic, training_with_dummy, TRUE),
+                fit_aic_Test = evaluate_model(fit_aic, testing_with_dummy, TRUE)
+                )
+
+kable(df)
+```
+
+```{r}
 fit_final = fit
 ```
+
+- Based the above the above table, the best model is selected and stored as `fit_final`
+
 
 
 ## Variance Inflation Factor (VIF) 
@@ -584,43 +606,6 @@ head(sort(vif(fit_final), decreasing = TRUE), 40)
 
 ## Residual diagnostics
 
-```{r, echo = FALSE}
-library(lmtest)
-plot_fitted_resid = function(model, pointcol = "dodgerblue", linecol = "darkorange") {
-  plot(fitted(model), resid(model), 
-       col = pointcol, pch = 20, cex = 1.5,
-       xlab = "Fitted", ylab = "Residuals")
-  abline(h = 0, col = linecol, lwd = 2)
-}
-
-plot_qq = function(model, pointcol = "dodgerblue", linecol = "darkorange") {
-  qqnorm(resid(model), col = pointcol, pch = 20, cex = 1.5)
-  qqline(resid(model), col = linecol, lwd = 2)
-}
-
-get_bp_decision = function(model, alpha) {
-  decide = unname(bptest(model)$p.value <= alpha)
-  ifelse(decide, "Reject", "Fail to Reject")
-}
-
-get_sw_decision = function(model, alpha) {
-  decide = unname(shapiro.test(resid(model))$p.value < alpha)
-  ifelse(decide, "Reject", "Fail to Reject")
-}
-
-get_num_params = function(model) {
-  length(coef(model))
-}
-
-get_loocv_rmse = function(model) {
-  sqrt(mean((resid(model) / (1 - hatvalues(model))) ^ 2))
-}
-
-get_adj_r2 = function(model) {
-  summary(model)$adj.r.squared
-}
-```
-
 ```{r}
 plot_fitted_resid(fit_final)
 ```
@@ -628,29 +613,12 @@ plot_fitted_resid(fit_final)
 plot_qq(fit_final)
 ```
 ```{r}
+df = data.frame(Measure = evaluate_model_name,
+                fit_final_Train = evaluate_model(fit, training_with_dummy, TRUE),
+                fit_final_Test = evaluate_model(fit, testing_with_dummy, TRUE))
 
-alpha = 0.1
-bptest(fit_final)
-get_bp_decision(fit_final, alpha)
+kable(df)
 ```
-```{r}
-shapiro.test(resid(fit_final))
-get_sw_decision(fit_final, alpha)
-```
-```{r}
-get_loocv_rmse(fit_final)
-```
-```{r}
-get_adj_r2(fit_final)
-```
-```{r}
-get_num_params(fit_final)
-```
-
-
-### AIC
-
-### BIC
 
 ### Other techniques
 
