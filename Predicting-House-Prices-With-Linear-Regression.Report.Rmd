@@ -171,9 +171,9 @@ data = subset(data, data$GarageType != "?")
 data = data[which(data$GrLivArea < 4000),]
 
 #Fix some NAs
-data$GarageYrBlt[is.na(data$GarageYrBlt)] = 0
-data$MasVnrArea[is.na(data$MasVnrArea)] = 0
-data$LotFrontage[is.na(data$LotFrontage)] = 0
+data$GarageYrBlt[is.na(data$GarageYrBlt)] = 1
+data$MasVnrArea[is.na(data$MasVnrArea)] = 1
+data$LotFrontage[is.na(data$LotFrontage)] = 1
 ```
 
 ## Feature Analysis
@@ -484,8 +484,30 @@ df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
 
 kable(df)
 
+
 fit_final = fit_aic
 ```
+
+```{r}
+fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond + 
+    YearBuilt  + BsmtFinSF1 + TotalBsmtSF  + 
+    log(X2ndFlrSF +1) + BsmtFullBath + FullBath + HalfBath + 
+    KitchenAbvGr + Fireplaces + GarageCars  + WoodDeckSF + 
+    OpenPorchSF + ScreenPorch + CentralAir + KitchenQual + log(LotArea) + 
+    log(GrLivArea) + I(X1stFlrSF^2) + log(GarageArea) + 
+    OverallQual:MasVnrArea + X2ndFlrSF:Fireplaces:YearBuilt, 
+    data = training_with_dummy)
+
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+                Train = evaluate_model(fit, training_with_dummy, TRUE),
+                Test = evaluate_model(fit, testing_with_dummy, TRUE))
+df
+library(faraway)
+vif(fit)
+
+fit_final = fit
+```
+
 
 ## Variance Inflation Factor (VIF) 
 
