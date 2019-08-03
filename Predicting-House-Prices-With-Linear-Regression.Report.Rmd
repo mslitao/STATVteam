@@ -1,0 +1,379 @@
+---
+title: "STAT 420 Final Project Proposal"
+date: "July 17, 2019"
+output:
+  html_document: 
+    toc: yes
+  pdf_document: default
+urlcolor: cyan
+---
+***
+
+# Group Members
+- Tao Li (taol4)
+- Chun Yue Shek (cyshek2)
+- Wanlin Yang (wanliny2)
+
+# Introduction
+
+**Predicting House Prices With Linear Regression**
+
+Ask a home buyer to describe their dream house, and they probably won't begin with the height of the basement ceiling or the proximity to an east-west railroad. But this dataset in our project proves that much more influences price negotiations than the number of bedrooms or a white-picket fence.
+
+We will use 79 explanatory variables describing (almost) every aspect of residential homes in Ames, Iowa, we will try all the techniques learned in this lession to predict the final price of each home.
+
+***
+
+## Dataset
+
+###  About the dataset
+
+We will use the [Real Estate Data](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data) dataset for our final project.
+
+- train.csv - the training set
+- test.csv - the test set
+- data_description.txt - full description of each column, originally prepared by Dean De Cock but lightly edited to match the column names used here
+
+### Understand the dataset
+
+This data is the real estate information with publicly available.Features include LotArea (Lot size in square feet), # of Bedroom, and # of Kitchen There are also categorical features, such as GarageType and MSSubClass(Building class), Utilities.
+
+Here's a brief version of what you'll find in the data description file.
+
+- SalePrice - the property's sale price in dollars. This is the target variable that you're trying to predict.
+- MSSubClass: The building class
+- MSZoning: The general zoning classification
+- LotFrontage: Linear feet of street connected to property
+- LotArea: Lot size in square feet
+- Street: Type of road access
+- Alley: Type of alley access
+- LotShape: General shape of property
+- LandContour: Flatness of the property
+- Utilities: Type of utilities available
+- LotConfig: Lot configuration
+- LandSlope: Slope of property
+- Neighborhood: Physical locations within Ames city limits
+- Condition1: Proximity to main road or railroad
+- Condition2: Proximity to main road or railroad (if a second is present)
+- BldgType: Type of dwelling
+- HouseStyle: Style of dwelling
+- OverallQual: Overall material and finish quality
+- OverallCond: Overall condition rating
+- YearBuilt: Original construction date
+- YearRemodAdd: Remodel date
+- RoofStyle: Type of roof
+- RoofMatl: Roof material
+- Exterior1st: Exterior covering on house
+- Exterior2nd: Exterior covering on house (if more than one material)
+- MasVnrType: Masonry veneer type
+- MasVnrArea: Masonry veneer area in square feet
+- ExterQual: Exterior material quality
+- ExterCond: Present condition of the material on the exterior
+- Foundation: Type of foundation
+- BsmtQual: Height of the basement
+- BsmtCond: General condition of the basement
+- BsmtExposure: Walkout or garden level basement walls
+- BsmtFinType1: Quality of basement finished area
+- BsmtFinSF1: Type 1 finished square feet
+- BsmtFinType2: Quality of second finished area (if present)
+- BsmtFinSF2: Type 2 finished square feet
+- BsmtUnfSF: Unfinished square feet of basement area
+- TotalBsmtSF: Total square feet of basement area
+- Heating: Type of heating
+- HeatingQC: Heating quality and condition
+- CentralAir: Central air conditioning
+- Electrical: Electrical system
+- 1stFlrSF: First Floor square feet
+- 2ndFlrSF: Second floor square feet
+- LowQualFinSF: Low quality finished square feet (all floors)
+- GrLivArea: Above grade (ground) living area square feet
+- BsmtFullBath: Basement full bathrooms
+- BsmtHalfBath: Basement half bathrooms
+- FullBath: Full bathrooms above grade
+- HalfBath: Half baths above grade
+- Bedroom: Number of bedrooms above basement level
+- Kitchen: Number of kitchens
+- KitchenQual: Kitchen quality
+- TotRmsAbvGrd: Total rooms above grade (does not include bathrooms)
+- Functional: Home functionality rating
+- Fireplaces: Number of fireplaces
+- FireplaceQu: Fireplace quality
+- GarageType: Garage location
+- GarageYrBlt: Year garage was built
+- GarageFinish: Interior finish of the garage
+- GarageCars: Size of garage in car capacity
+- GarageArea: Size of garage in square feet
+- GarageQual: Garage quality
+- GarageCond: Garage condition
+- PavedDrive: Paved driveway
+- WoodDeckSF: Wood deck area in square feet
+- OpenPorchSF: Open porch area in square feet
+- EnclosedPorch: Enclosed porch area in square feet
+- 3SsnPorch: Three season porch area in square feet
+- ScreenPorch: Screen porch area in square feet
+- PoolArea: Pool area in square feet
+- PoolQC: Pool quality
+- Fence: Fence quality
+- MiscFeature: Miscellaneous feature not covered in other categories
+- MiscVal: $Value of miscellaneous feature
+- MoSold: Month Sold
+- YrSold: Year Sold
+- SaleType: Type of sale
+- SaleCondition: Condition of sale
+
+## Motivation and Goal
+
+### Motivation
+
+This dataset gives us a chance to look into the data on what really influences the value of a house, so our team members are excited to take a look!
+
+It will be applealing to analyze housing data and deliver a good model predicting price given the predictors of housing information. We may apply the model over the houses we have known around us, and analyse whether there can be some potential influence to the house price that cannot be reflected by data.
+
+### Goals
+We plan to 
+
+- Assemble the data and explore the coorelation 
+- Clean variables, filtering the outliers and perform feature transformation and selections.
+- Build the best model levergaing the knowledge in this course..
+
+To evaluate the model, we want to use Root-Mean-Squared-Error (RMSE) between the logarithm of the predicted value and the logarithm of the observed sales price. (Taking logs means that errors in predicting expensive houses and cheap houses will affect the result equally.) The definition of RMSE will stay the same
+
+\[
+\text{RMSE}(\text{model, data}) = \sqrt{\frac{1}{n} \sum_{i = 1}^{n}(y_i - \hat{y}_i)^2}
+\]
+
+where
+
+- $y_i$ are the actual values of the response for the given data.
+- $\hat{y}_i$ are the predicted values using the fitted model and the predictors from the data.
+
+# Methods
+## Load the data
+```{r}
+data = read.csv("train.csv")
+
+#Remove Id from data
+rownames(data) = data$Id
+data = data[, -which(names(data) %in% c("Id"))]
+
+```
+
+## Outlier diagnostics
+```{r}
+# remove missing data, which is stored as "?"
+data = subset(data, data$GarageType != "?")
+
+#Remove outliers that has larger GrLivArea more than 4000
+data = data[which(data$GrLivArea < 4000),]
+
+#Fix some NAs
+data$GarageYrBlt[is.na(data$GarageYrBlt)] = 0
+data$MasVnrArea[is.na(data$MasVnrArea)] = 0
+data$LotFrontage[is.na(data$LotFrontage)] = 0
+```
+
+## Feature Analysis
+
+### Coorelation Analysis
+
+```{r}
+#Try correlation only for numeric features
+data_numeric = data[, unlist(lapply(data, is.numeric))]
+
+numericFeatures = names(data_numeric)
+numericFeatures = numericFeatures[!numericFeatures %in% c("SalePrice")]
+
+n = length(numericFeatures)
+correlations_na_na = rep(0.0, n)
+correlations_log_na = rep(0.0, n)
+correlations_na_log = rep(0.0, n)
+correlations_log_log = rep(0.0, n)
+
+for(i in 1:n){
+  correlations_na_na[i] = cor(data[,numericFeatures[i]], data[,"SalePrice"])
+  correlations_log_na[i] = cor(log(data[,numericFeatures[i]] +1), data[,"SalePrice"])
+  correlations_na_log[i] = cor(data[,numericFeatures[i]], log(data[,"SalePrice"]))
+  correlations_log_log[i] = cor(log(data[,numericFeatures[i]]+1), log(data[,"SalePrice"]))
+}
+
+colFeaturesName = rep("", n-1)
+colFeaturesCorr = rep(0.0, n-1)
+
+featureStat = data.frame(features = numericFeatures, 
+                   abs_correlations = round(abs(correlations_na_na),2),
+                   correlations_na_na = round(correlations_na_na,2),
+                   correlations_log_na = round(correlations_log_na,2),
+                   correlations_na_log = round(correlations_na_log,2),
+                   correlations_log_log = round(correlations_log_log,2)
+                   )
+featureStat = featureStat[order(-featureStat$abs_correlations),]
+library("knitr")
+kable(featureStat)
+```
+
+### Collinearity Analysis
+
+- Year based: 
+
+  YearBuilt - GarageYtBlt - YearRemodAdd - OverallQual
+- Area based
+
+  GrLivArea - TotRmsAbvGrd - X2ndFlrSF - FullBath
+  
+  TotalBsmtSF - X1stFlrSF - OverallQual - GarageArea
+  
+- Garage
+
+  GarageCars - GarageArea - GarageYtBlt - OverallQual
+  
+- First Floor
+
+  X1stFlrSF - TotalBsmtSF - GrLivArea - GarageArea
+  
+- Second Floor
+
+  X2ndFlrSF - GrLivArea - HalfBath - FullBath
+- Lot 
+
+  LotFrontage
+  LotArea
+
+## Multiple linear regression
+
+### Define metrics calculation
+```{r}
+# Calculate RMSE
+cal_rmse = function(y, y_hat){
+  n = length(y)
+  sqrt(sum((y - y_hat) ^ 2) / n)
+}
+```
+
+### Training and Testing Data
+```{r}
+set.seed(20190801)
+
+data_selected = data_numeric[, which(names(data_numeric) %in% c(as.character(subset(featureStat, featureStat$abs_correlations>0.05)$features), "SalePrice"))]
+
+sample <- sample.int(n = nrow(data_selected), size = floor(.7*nrow(data_selected)), replace = F)
+
+training = data_selected[sample,]
+testing  = data_selected[-sample,]
+```
+
+### Full model with all numeric predictors
+
+```{r}
+fit = lm(SalePrice ~ ., data = training)
+#summary(model1)
+
+# RMSE on train and test data, log and raw
+cal_rmse(log(training$SalePrice), log(predict(fit, newdata = training)))
+cal_rmse(training$SalePrice, predict(fit, newdata = training))
+cal_rmse(log(testing$SalePrice), log(predict(fit, newdata = testing)))
+cal_rmse(testing$SalePrice, predict(fit, newdata = testing))
+
+# AIC
+fit_aic = step(fit,trace = 0)
+cal_rmse(log(training$SalePrice), log(predict(fit_aic, newdata = training)))
+cal_rmse(training$SalePrice, predict(fit_aic, newdata = training))
+cal_rmse(log(testing$SalePrice), log(predict(fit_aic, newdata = testing)))
+cal_rmse(testing$SalePrice, predict(fit_aic, newdata = testing))
+
+```
+
+
+## Dummy variables
+@Wanlin to add more details
+
+## Tranformations
+
+
+### Response Tranformations 
+
+Based on the analysis, we want to apply log transformation to response field.
+
+```{r}
+fit = lm(log(SalePrice) ~ ., data = training)
+#summary(model1)
+
+# RMSE on train and test data, log and raw
+cal_rmse(log(training$SalePrice), predict(fit, newdata = training))
+cal_rmse(training$SalePrice, exp(predict(fit, newdata = training)))
+cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))
+cal_rmse(testing$SalePrice, exp(predict(fit, newdata = testing)))
+
+# AIC
+fit_aic = step(fit,trace = 0)
+
+cal_rmse(log(training$SalePrice), predict(fit_aic, newdata = training))
+cal_rmse(training$SalePrice, exp(predict(fit_aic, newdata = training)))
+cal_rmse(log(testing$SalePrice), predict(fit_aic, newdata = testing))
+cal_rmse(testing$SalePrice, exp(predict(fit_aic, newdata = testing)))
+
+#TODO: Use the table to visualize the results.
+```
+
+We can see that with transofrmation to the response, there's a significant improvement.
+
+### Predictor Tranformations
+
+- Feature range is larger (Area)
+log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea)
+
+```{r}
+fit = lm(log(SalePrice) ~ . + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = training)
+
+cal_rmse(log(training$SalePrice), predict(fit, newdata = training))
+cal_rmse(training$SalePrice, exp(predict(fit, newdata = training)))
+cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))
+cal_rmse(testing$SalePrice, exp(predict(fit, newdata = testing)))
+```
+We can see slightly improvemtn by applying tranformation to predictors. <TODO> add more analysis here.
+
+## Interaction
+
+For top important features
+
+- OverallQual
+- GrLivArea
+- GarageCars
+- GarageCars
+- YearBuilt
+- YearRemodAdd
+
+```{r}
+fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
+
+cal_rmse(log(training$SalePrice), predict(fit, newdata = training))
+cal_rmse(training$SalePrice, exp(predict(fit, newdata = training)))
+cal_rmse(log(testing$SalePrice), predict(fit, newdata = testing))
+cal_rmse(testing$SalePrice, exp(predict(fit, newdata = testing)))
+
+# AIC
+fit_aic = step(fit,trace = 0)
+
+cal_rmse(log(training$SalePrice), predict(fit_aic, newdata = training))
+cal_rmse(training$SalePrice, exp(predict(fit_aic, newdata = training)))
+cal_rmse(log(testing$SalePrice), predict(fit_aic, newdata = testing))
+cal_rmse(testing$SalePrice, exp(predict(fit_aic, newdata = testing)))
+```
+
+
+
+## Residual diagnostics
+
+## Model selection
+
+### AIC
+
+### BIC
+
+### Other techniques
+
+# Results
+
+# Discussion
+
+# Appendix
+
