@@ -512,8 +512,8 @@ fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtS
 
 
 df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
-                Train = evaluate_model(fit, training_with_dummy, TRUE),
-                Test = evaluate_model(fit, testing_with_dummy, TRUE))
+                Train = evaluate_model(fit, training, TRUE),
+                Test = evaluate_model(fit, testing, TRUE))
 
 kable(df)
 
@@ -532,8 +532,8 @@ fit_aic = step(fit,trace = 0)
 
 
 df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
-                Train = evaluate_model(fit_aic, training_with_dummy, TRUE),
-                Test = evaluate_model(fit_aic, testing_with_dummy, TRUE))
+                Train = evaluate_model(fit_aic, training, TRUE),
+                Test = evaluate_model(fit_aic, testing, TRUE))
 
 kable(df)
 
@@ -557,8 +557,8 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
 
 
 df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
-                Train = evaluate_model(fit, training_with_dummy, TRUE),
-                Test = evaluate_model(fit, testing_with_dummy, TRUE))
+                Train = evaluate_model(fit, training, TRUE),
+                Test = evaluate_model(fit, testing, TRUE))
 df
 
 cd_fit = cooks.distance(fit)
@@ -577,8 +577,8 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
 
 
 df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
-                Train = evaluate_model(fit, training_with_dummy, TRUE),
-                Test = evaluate_model(fit, testing_with_dummy, TRUE))
+                Train = evaluate_model(fit, training, TRUE),
+                Test = evaluate_model(fit, testing, TRUE))
 
 library(faraway)
 #df
