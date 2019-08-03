@@ -489,12 +489,14 @@ fit_final = fit_aic
 ```
 
 ```{r}
+
+
 fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond + 
     YearBuilt  + BsmtFinSF1 + TotalBsmtSF + 
     log(X2ndFlrSF +1) + BsmtFullBath + FullBath + HalfBath + 
     KitchenAbvGr + Fireplaces + GarageCars  + WoodDeckSF + 
     OpenPorchSF + ScreenPorch + CentralAir + KitchenQual + log(LotArea) + 
-    log(GrLivArea):SaleType + log(GarageArea) + I(X1stFlrSF^2)+
+    log(GrLivArea):YearBuilt + log(GarageArea) + I(X1stFlrSF^2)+
     OverallQual:MasVnrArea + X2ndFlrSF:Fireplaces:YearBuilt, 
     data = training_with_dummy)
 
@@ -502,13 +504,30 @@ df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
                 Train = evaluate_model(fit, training_with_dummy, TRUE),
                 Test = evaluate_model(fit, testing_with_dummy, TRUE))
 df
+
+cd_fit = cooks.distance(fit)
+large_cd_fit = cd_fit > 4 / length(cd_fit)
+
+fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond + 
+    YearBuilt  + BsmtFinSF1 + TotalBsmtSF + 
+    log(X2ndFlrSF +1) + BsmtFullBath + FullBath + HalfBath + 
+    KitchenAbvGr + Fireplaces + GarageCars  + WoodDeckSF + 
+    OpenPorchSF + ScreenPorch + CentralAir + KitchenQual + log(LotArea) + 
+    log(GrLivArea):YearBuilt + log(GarageArea) + I(X1stFlrSF^2)+
+    OverallQual:MasVnrArea + X2ndFlrSF:Fireplaces:YearBuilt, 
+    data = training_with_dummy,
+    subset = cd_fit <= 4 / length(cd_fit)
+    )
+
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+                Train = evaluate_model(fit, training_with_dummy, TRUE),
+                Test = evaluate_model(fit, testing_with_dummy, TRUE))
+
 library(faraway)
 #df
 #vif(fit)
 
 fit_final = fit
-
-#bptest(fit)
 ```
 
 
