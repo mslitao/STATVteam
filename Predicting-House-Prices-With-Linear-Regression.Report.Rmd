@@ -361,9 +361,92 @@ cal_rmse(testing$SalePrice, exp(predict(fit_aic, newdata = testing)))
 
 
 
-## Residual diagnostics
+
 
 ## Model selection
+
+```{r}
+fit_final = fit
+```
+
+## Variance Inflation Factor (VIF) 
+
+```{r}
+library(faraway)
+sort(vif(fit_final), decreasing = TRUE)
+```
+
+```{r}
+head(sort(vif(fit_final), decreasing = TRUE), 40)
+```
+
+- `names(vif(fit_final)[which.max(vif(mod))])` has the largest VIF
+- Most of predictors have very high VIF. They suggest multicollinearity. It does not affect prediction. However, we should aware the multicollinearity exist in our best model for predication  
+## Residual diagnostics
+
+```{r, echo = FALSE}
+library(lmtest)
+plot_fitted_resid = function(model, pointcol = "dodgerblue", linecol = "darkorange") {
+  plot(fitted(model), resid(model), 
+       col = pointcol, pch = 20, cex = 1.5,
+       xlab = "Fitted", ylab = "Residuals")
+  abline(h = 0, col = linecol, lwd = 2)
+}
+
+plot_qq = function(model, pointcol = "dodgerblue", linecol = "darkorange") {
+  qqnorm(resid(model), col = pointcol, pch = 20, cex = 1.5)
+  qqline(resid(model), col = linecol, lwd = 2)
+}
+
+get_bp_decision = function(model, alpha) {
+  decide = unname(bptest(model)$p.value < alpha)
+  ifelse(decide, "Reject", "Fail to Reject")
+}
+
+get_sw_decision = function(model, alpha) {
+  decide = unname(shapiro.test(resid(model))$p.value < alpha)
+  ifelse(decide, "Reject", "Fail to Reject")
+}
+
+get_num_params = function(model) {
+  length(coef(model))
+}
+
+get_loocv_rmse = function(model) {
+  sqrt(mean((resid(model) / (1 - hatvalues(model))) ^ 2))
+}
+
+get_adj_r2 = function(model) {
+  summary(model)$adj.r.squared
+}
+```
+
+```{r}
+plot_fitted_resid(fit_final)
+```
+```{r}
+plot_qq(fit_final)
+```
+```{r}
+
+alpha = 0.1
+bptest(fit_final)
+get_bp_decision(fit_final, alpha)
+```
+```{r}
+shapiro.test(resid(fit_final))
+get_sw_decision(fit_final, alpha)
+```
+```{r}
+get_loocv_rmse(fit_final)
+```
+```{r}
+get_adj_r2(fit_final)
+```
+```{r}
+get_num_params(fit_final)
+```
+
 
 ### AIC
 
