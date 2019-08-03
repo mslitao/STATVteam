@@ -252,6 +252,43 @@ rmse = function(y, y_hat){
   sqrt(sum((y - y_hat) ^ 2) / n)
 }
 
+alpha = 0.05
+
+library(lmtest)
+plot_fitted_resid = function(model, pointcol = "dodgerblue", linecol = "darkorange") {
+  plot(fitted(model), resid(model), 
+       col = pointcol, pch = 20, cex = 1.5,
+       xlab = "Fitted", ylab = "Residuals")
+  abline(h = 0, col = linecol, lwd = 2)
+}
+
+plot_qq = function(model, pointcol = "dodgerblue", linecol = "darkorange") {
+  qqnorm(resid(model), col = pointcol, pch = 20, cex = 1.5)
+  qqline(resid(model), col = linecol, lwd = 2)
+}
+
+get_bp_decision = function(model, alpha) {
+  decide = unname(bptest(model)$p.value <= alpha)
+  ifelse(decide, "Reject", "Fail to Reject")
+}
+
+get_sw_decision = function(model, alpha) {
+  decide = unname(shapiro.test(resid(model))$p.value < alpha)
+  ifelse(decide, "Reject", "Fail to Reject")
+}
+
+get_num_params = function(model) {
+  length(coef(model))
+}
+
+get_loocv_rmse = function(model) {
+  sqrt(mean((resid(model) / (1 - hatvalues(model))) ^ 2))
+}
+
+get_adj_r2 = function(model) {
+  summary(model)$adj.r.squared
+}
+
 evaluate_model = function(fit, data, response_log = FALSE){
   predicts = predict(fit, newdata = data)
   predicts[predicts<1] = 1
@@ -265,7 +302,7 @@ evaluate_model = function(fit, data, response_log = FALSE){
     rmse_log = rmse(log(data$SalePrice), log(predicts))
     rmse = rmse(data$SalePrice, predicts)
   }
-  c(rmse, rmse_log, r2)
+  c(rmse, rmse_log, get_loocv_rmse(fit), r2, get_adj_r2(fit), get_bp_decision(fit, alpha), get_sw_decision(fit, alpha), get_num_params(fit))
 }
 ```
 
@@ -287,7 +324,7 @@ testing  = data_selected[-sample,]
 fit = lm(SalePrice ~ ., data = training)
 
 # RMSE on train and test data, log and raw
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit,training),
                 Test = evaluate_model(fit,testing))
 
@@ -295,7 +332,7 @@ kable(df)
 
 # AIC
 fit_aic = step(fit,trace = 0)
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit_aic,training),
                 Test = evaluate_model(fit_aic,testing))
 
@@ -313,7 +350,7 @@ fit = lm(log(SalePrice) ~ ., data = training)
 #summary(model1)
 
 # RMSE on train and test data, log and raw
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit, training, TRUE),
                 Test = evaluate_model(fit, testing, TRUE))
 
@@ -330,7 +367,7 @@ log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea)
 ```{r}
 fit = lm(log(SalePrice) ~ . + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = training)
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit, training, TRUE),
                 Test = evaluate_model(fit, testing, TRUE))
 
@@ -353,7 +390,7 @@ For top important features
 ```{r}
 fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit, training, TRUE),
                 Test = evaluate_model(fit, testing, TRUE))
 
@@ -459,7 +496,7 @@ Fit the model.
 ```{r}
 fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training_with_dummy)
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit, training_with_dummy, TRUE),
                 Test = evaluate_model(fit, testing_with_dummy, TRUE))
 
@@ -478,7 +515,7 @@ We can see a slight improvement of RMSE.
 # AIC
 fit_aic = step(fit,trace = 0)
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit_aic, training_with_dummy, TRUE),
                 Test = evaluate_model(fit_aic, testing_with_dummy, TRUE))
 
@@ -500,7 +537,7 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
     OverallQual:MasVnrArea + X2ndFlrSF:Fireplaces:YearBuilt, 
     data = training_with_dummy)
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit, training_with_dummy, TRUE),
                 Test = evaluate_model(fit, testing_with_dummy, TRUE))
 df
@@ -519,7 +556,7 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
     subset = cd_fit <= 4 / length(cd_fit)
     )
 
-df = data.frame(Measure = c("RMSE", "RMSE Logged", "R2"),
+df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit, training_with_dummy, TRUE),
                 Test = evaluate_model(fit, testing_with_dummy, TRUE))
 
@@ -542,7 +579,7 @@ sort(vif(fit_final), decreasing = TRUE)
 head(sort(vif(fit_final), decreasing = TRUE), 40)
 ```
 
-- `names(vif(fit_final)[which.max(vif(mod))])` has the largest VIF
+- `r names(vif(fit_final)[which.max(vif(fit_final))])` has the largest VIF
 - Most of predictors have very high VIF. They suggest multicollinearity. It does not affect prediction. However, we should aware the multicollinearity exist in our best model for predication  
 ## Residual diagnostics
 
