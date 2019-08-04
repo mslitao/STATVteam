@@ -427,6 +427,7 @@ $(document).ready(function () {
 <li><a href="#best-way-to-use-dummy-variables">Best way to use dummy variables</a></li>
 <li><a href="#outlier-diagnostics-is-siginificant">Outlier Diagnostics is siginificant</a></li>
 <li><a href="#can-we-try-a-more-complex-model">Can we try a more complex model</a></li>
+<li><a href="#a-prediction-example">A prediction example</a></li>
 </ul></li>
 <li><a href="#appendix">Appendix</a></li>
 </ul>
@@ -1938,8 +1939,9 @@ kable(df)</code></pre>
 </ul>
 <div id="parameters-of-final-model" class="section level2">
 <h2>Parameters of Final Model</h2>
-<p>The expression of our final model is <span class="math display">\[
-log(y) = \beta_0 + \beta_1x_{LotFrontage} + \beta_2x_{OverallQual} + \beta_3x_{OverallCond} + \beta_4x_{YearBuilt} + \beta_5x_{BsmtFinSF1} + \beta_6x_{TotalBsmtSF} \\
+<p>The expression of our final model is</p>
+<p><span class="math display">\[
+log(SalePrice) = \beta_0 + \beta_1x_{LotFrontage} + \beta_2x_{OverallQual} + \beta_3x_{OverallCond} + \beta_4x_{YearBuilt} + \beta_5x_{BsmtFinSF1} + \beta_6x_{TotalBsmtSF} \\
 + \beta_7log(x_{X2ndFlrSF}+1) + \beta_8x_{BsmtFullBath} + \beta_9x_{FullBath} + \beta_{10}x_{HalfBath} + \beta_{11}x_{KitchenAbvGr} + \beta_{12}x_{Fireplaces} \\
 + \beta_{13}x_{GarageCars} + \beta_{14}x_{WoodDeckSF} + \beta_{15}x_{OpenPorchSF} + \beta_{16}x_{ScreenPorch} + \beta_{17}x_{CentralAirY} + \beta_{18}x_{KitchenQualFa} \\
 + \beta_{19}x_{KitchenQualGd} + \beta_{20}x_{KitchenQualTA} + \beta_{21}log(x_{LotArea}) + \beta_{22}log(x_{GarageArea}) + \beta_{23}x_{X1stFlrSF}^2 + \beta_{24}x_{YearBuilt}log(x_{GrLivArea}) \\
@@ -2152,6 +2154,19 @@ kable(df)</code></pre>
 </tr>
 </tbody>
 </table>
+<p>It’s clear that the more complex model start to overfitting which is a bad model. That’s a also very good learning from this lesson. Too complex model is usually a bad model which may perform good on training data but does bad in the testing data.</p>
+</div>
+<div id="a-prediction-example" class="section level2">
+<h2>A prediction example</h2>
+<p>We can pick an observation from test set.</p>
+<pre class="r"><code>data_test = read.csv(&quot;test.csv&quot;)
+(data_test_1_confidence = exp(predict(fit_final, newdata = data_test[1,], interval = c(&quot;confidence&quot;), level = 0.95)))</code></pre>
+<pre><code>##      fit    lwr    upr
+## 1 122902 118848 127095</code></pre>
+<ul>
+<li>Since the <code>test.csv</code> data set do not contain the Sale price, we can double check the result.</li>
+<li>However, with using the final model <code>fit_final</code>, we are 95% confidence that the mean Sale price is NA and within NA and NA</li>
+</ul>
 </div>
 </div>
 <div id="appendix" class="section level1">
