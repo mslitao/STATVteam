@@ -154,13 +154,14 @@ where
 
 # Methods
 ## Load the data
+
+Firstly we can load the data from `csv` file, while the `Id` row will not be included in this dataset.
 ```{r}
 data = read.csv("train.csv")
 
 #Remove Id from data
 rownames(data) = data$Id
 data = data[, -which(names(data) %in% c("Id"))]
-
 ```
 
 We want to make some value cleaning and fix invalid data values in the data.
@@ -236,6 +237,8 @@ data = data[which(data$GrLivArea < 4000),]
 ```
 
 ### Collinearity Analysis
+
+There a 79 predictors in the original dataset, and some of them describe the similar property of a house and are linearly related. We want to find out the colinearity relationship with of each predictor with others.
 
 ```{r echo=FALSE}
 n = length(numericFeatures)
@@ -313,9 +316,13 @@ For example:
 
   X2ndFlrSF - GrLivArea - HalfBath - FullBath
 
-Leveraging this inforamtion, we can perform better model and feature selection with siginificant domain knowledge learned from the data.
+It's not hard to find that predictors that are colinearly related also have logical relationship. For example, the greater `YearBuilt`, the greater `GarageYtBlt`. That's easy to understand because house and garage are generally built in the same year. Similiar explaination can also be applied to garage. The more cars there are, the greater garage area will be.
+
+Leveraging this inforamtion, we can prune plenty of predictors, perform better model, and select feature with siginificant domain knowledge learned from the data.
 
 ## Dummy Variables
+
+We split the predictors into numerail and factor. In this section, we will investigate the properties of factor predictors and find out proper dummy variable for our model.
 
 ```{r}
 data_dummy = data[, unlist(lapply(data, is.factor))]
@@ -323,6 +330,7 @@ data_dummy$SalePrice = data$SalePrice
 ```
 
 ### Remove predictors with too many Nan
+
 Remove predictors having more than 40% of Nan.
 ```{r}
 num_nan = rep(0, ncol(data_dummy))
@@ -336,6 +344,7 @@ num_nan[rm_col_idx]/nrow(data_dummy)
 Above are 5 dummy predictors that should be removed due to too many Nan.
 That make sence because few houses have above features.
 
+Then we can remove rows containing Nan.
 ```{r}
 # remove rows containing Nan
 data_dummy = data_dummy[,-rm_col_idx]
@@ -379,10 +388,7 @@ unlist(lapply(lapply(data_dummy[remained_dummy_col_idx], levels), length))
 There are some numerical predictors related to Bsmt, so we don't consider the Bsmt dummy variables. Same reasons for garage.
 To select suitable dummy variables, we want the mean price among levels have a lot difference, and observations of each level have enough amount. So we can plot the barplot of mean price and amout of levels in a particular dummy variable.
 
-Based on above analysis, we decide to use 2 dummy variables.
 
-- CentralAir
-- KitchenQual
 
 ```{r include=FALSE}
 dummy_barplot = function(dummy_col, price_col, amount_factor=100) {
@@ -406,10 +412,21 @@ dummy_barplot(data_dummy$CentralAir, data_dummy$SalePrice)
 dummy_barplot(data_dummy$KitchenQual, data_dummy$SalePrice)
 ```
 
+The above plots are our selected dummy variables. They don't have too many levels, and contain information that numerical variables don't have. They have relatively balanced amout, and obvious difference of house price among levels.
+
+Based on above analysis, we decide to use 2 dummy variables.
+
+- CentralAir
+- KitchenQual
 
 ## Multiple linear regression
 
+In this section, we will find out the best model to satisfy all the metrics.
+
 ### Define metrics calculation
+
+Our metrics will include: **RMSE**, **RMSE Logged**, **loocv_RMSE**, **R2**, **Adj. R2**, **bp_decision**, **bp_p_value**, **sw_decision**, **sw_p_value**, **num_params**
+
 ```{r}
 # Calculate RMSE
 rmse = function(y, y_hat){
@@ -478,6 +495,8 @@ evaluate_model_name = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "b
 ```
 
 ### Training and Testing Data
+
+We can split the data randomly into training and testing set.
 ```{r}
 set.seed(20190801)
 
@@ -494,6 +513,8 @@ testing  = data_selected[-sample,]
 ```
 
 ### Full model with all numeric predictors
+
+Follwing is an additive model using all numeric predictors.
 
 ```{r}
 fit_add_full = lm(SalePrice ~ ., data = training)
@@ -519,6 +540,8 @@ kable(df_add_selected)
 ```
 
 ## Tranformations
+
+From the above output, we found the additive model is not good enough. We want a smaller `RMSE Logged`. So we will apply some transformations to significant predictors.
 
 ### Response Tranformations 
 
@@ -547,10 +570,11 @@ df_logprice_add_selected = data.frame(Measure = evaluate_model_name,
 kable(df_logprice_add_selected)
 ```
 
-We can see that with transofrmation to the response, there's a significant improvement.
+We can see that with transofrmation to the response, there's a significant improvement. The test `RMSE Logged` has reduced a lot comparing with the previous model.
 
 ### Predictor Tranformations
 
+We will make transformations to some "significant" predictors:
 - Feature range is larger (Area), we picked the LotArea, GrLivArea, X1stFlrSF, GarageArea
 
 ```{r}
@@ -563,7 +587,7 @@ df_logprice_transform_full = data.frame(Measure = evaluate_model_name,
 kable(df_logprice_transform_full)
 ```
 
-We can see slightly improvemtn by applying tranformation to predictors. <TODO> add more analysis here.
+We can see slightly improvemtn by applying tranformation to predictors. Although the `RMSE Logged` doesn't get better, we are making `bp_p_value` larger. In our following work, we will focus on making our model closer to satisfying equal-variance assumption and normality assumption.
 
 ## Interaction
 
@@ -585,6 +609,7 @@ df_logprice_transform_interaction_full = data.frame(Measure = evaluate_model_nam
 kable(df_logprice_transform_interaction_full)
 ```
 
+The `bptest` is met in this model.
 
 ## Model selection
 
@@ -598,9 +623,11 @@ df_logprice_transform_interaction_aic = data.frame(Measure = evaluate_model_name
 kable(df_logprice_transform_interaction_aic)
 ```
 
-Currently, it's best the model with best RMSE. However, it can not meet the `bptest`.
+Currently, it's best the model with best RMSE. However, it can not meet the `shaprio-test`.
 
 ## Outlier diagnostics
+
+We will try to remove some outliers to meet the assumptions in this section.
 
 ```{r}
 
@@ -641,6 +668,8 @@ df = data.frame(Measure = evaluate_model_name,
 
 kable(df)
 ```
+
+Got it! Both equal-variance assumption and normality assumption are met in this model.
 
 # Results
 
