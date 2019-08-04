@@ -1,5 +1,5 @@
 ---
-title: "Predicting House Prices With Linear Regression*"
+title: "Predicting House Prices With Linear Regression"
 author: "taol4,cyshek2,wanliny2"
 date: "August 1, 2019"
 output:
