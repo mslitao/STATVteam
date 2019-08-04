@@ -722,8 +722,11 @@ plot_qq(df_logprice_transform_interaction_outlier, main = "Model without outlier
 ```
 
 
-## A prediction example
-We can pick an observation from test set.
-
 # Appendix
 
+
+When we proposal this project, we are interested to this HOT problem. And this dataset gives us a chance to look into the data on what really influences the value of a house, so our team members are excited to take a look! 
+
+Solving this problem to come out a good model fitting the house sale price using so many predictors is not a easy work to us. We tried nearly all the solutions learned from this lession. Finally, we got a great model which can fit the data well. By applying all the model test and anlysis techniques, we verified the model using multi algorithms (RMSE, bp-test, etc) on both training and testing data. And we are lucky that the model is a pretty good one.
+
+In the next step, We may apply the model over the houses we have known around us, and analyse whether there can be some potential influence to the house price that cannot be reflected by data.
