@@ -1204,7 +1204,7 @@ get_adj_r2 = function(model) {
   summary(model)$adj.r.squared
 }
 
-evaluate_model = function(fit, data, response_log = FALSE){
+evaluate_model = function(fit, data, response_log = FALSE, round_num = 4){
   predicts = predict(fit, newdata = data)
   predicts[predicts&lt;1] = 1
   
@@ -1217,9 +1217,9 @@ evaluate_model = function(fit, data, response_log = FALSE){
     rmse_log = rmse(log(data$SalePrice), log(predicts))
     rmse = rmse(data$SalePrice, predicts)
   }
-  c(rmse, rmse_log, get_loocv_rmse(fit), r2, get_adj_r2(fit), 
-    get_bp_decision(fit, alpha), bptest(fit)$p.value,
-    get_sw_decision(fit, alpha), shapiro.test(resid(fit))$p.value,
+  c(round(rmse, round_num), round(rmse_log, round_num), round(get_loocv_rmse(fit), round_num), round(r2, round_num), round(get_adj_r2(fit), round_num), 
+    get_bp_decision(fit, alpha), round(bptest(fit)$p.value, round_num),
+    get_sw_decision(fit, alpha), round(shapiro.test(resid(fit))$p.value, round_num),
     get_num_params(fit))
 }
 
@@ -1261,28 +1261,28 @@ kable(df_add_full)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">RMSE</td>
-<td align="left">26066.1616696813</td>
-<td align="left">26575.7891795294</td>
+<td align="left">26066.1617</td>
+<td align="left">26575.7892</td>
 </tr>
 <tr class="even">
 <td align="left">RMSE Logged</td>
-<td align="left">0.147062341755175</td>
-<td align="left">0.159086460141206</td>
+<td align="left">0.1471</td>
+<td align="left">0.1591</td>
 </tr>
 <tr class="odd">
 <td align="left">loocv_RMSE</td>
-<td align="left">27563.7405107533</td>
-<td align="left">27563.7405107533</td>
+<td align="left">27563.7405</td>
+<td align="left">27563.7405</td>
 </tr>
 <tr class="even">
 <td align="left">R2</td>
-<td align="left">0.880916761791506</td>
-<td align="left">0.880916761791506</td>
+<td align="left">0.8809</td>
+<td align="left">0.8809</td>
 </tr>
 <tr class="odd">
 <td align="left">Adj. R2</td>
-<td align="left">0.876682120777627</td>
-<td align="left">0.876682120777627</td>
+<td align="left">0.8767</td>
+<td align="left">0.8767</td>
 </tr>
 <tr class="even">
 <td align="left">bp_decision</td>
@@ -1291,8 +1291,8 @@ kable(df_add_full)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">bp_p_value</td>
-<td align="left">8.63480883520345e-21</td>
-<td align="left">8.63480883520345e-21</td>
+<td align="left">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">sw_decision</td>
@@ -1301,8 +1301,8 @@ kable(df_add_full)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">sw_p_value</td>
-<td align="left">1.10190160270543e-22</td>
-<td align="left">1.10190160270543e-22</td>
+<td align="left">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">num_params</td>
@@ -1335,38 +1335,38 @@ kable(df_add_selected)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">RMSE</td>
-<td align="left">26172.3168609805</td>
-<td align="left">26501.4203412611</td>
-<td align="left">26465.0280139239</td>
-<td align="left">26483.1458866779</td>
+<td align="left">26172.3169</td>
+<td align="left">26501.4203</td>
+<td align="left">26465.028</td>
+<td align="left">26483.1459</td>
 </tr>
 <tr class="even">
 <td align="left">RMSE Logged</td>
-<td align="left">0.147122072864336</td>
-<td align="left">0.159340497544025</td>
-<td align="left">0.150019898684383</td>
-<td align="left">0.158164211080341</td>
+<td align="left">0.1471</td>
+<td align="left">0.1593</td>
+<td align="left">0.15</td>
+<td align="left">0.1582</td>
 </tr>
 <tr class="odd">
 <td align="left">loocv_RMSE</td>
-<td align="left">27169.5918302707</td>
-<td align="left">27169.5918302707</td>
-<td align="left">27343.2839959124</td>
-<td align="left">27343.2839959124</td>
+<td align="left">27169.5918</td>
+<td align="left">27169.5918</td>
+<td align="left">27343.284</td>
+<td align="left">27343.284</td>
 </tr>
 <tr class="even">
 <td align="left">R2</td>
-<td align="left">0.879944846928892</td>
-<td align="left">0.879944846928892</td>
-<td align="left">0.877244436903846</td>
-<td align="left">0.877244436903846</td>
+<td align="left">0.8799</td>
+<td align="left">0.8799</td>
+<td align="left">0.8772</td>
+<td align="left">0.8772</td>
 </tr>
 <tr class="odd">
 <td align="left">Adj. R2</td>
-<td align="left">0.877132053140219</td>
-<td align="left">0.877132053140219</td>
-<td align="left">0.874901276632658</td>
-<td align="left">0.874901276632658</td>
+<td align="left">0.8771</td>
+<td align="left">0.8771</td>
+<td align="left">0.8749</td>
+<td align="left">0.8749</td>
 </tr>
 <tr class="even">
 <td align="left">bp_decision</td>
@@ -1377,10 +1377,10 @@ kable(df_add_selected)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">bp_p_value</td>
-<td align="left">2.92071164757662e-24</td>
-<td align="left">2.92071164757662e-24</td>
-<td align="left">5.21694948999137e-25</td>
-<td align="left">5.21694948999137e-25</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">sw_decision</td>
@@ -1391,10 +1391,10 @@ kable(df_add_selected)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">sw_p_value</td>
-<td align="left">4.40871680786613e-22</td>
-<td align="left">4.40871680786613e-22</td>
-<td align="left">6.83367621874233e-22</td>
-<td align="left">6.83367621874233e-22</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">num_params</td>
@@ -1431,28 +1431,28 @@ kable(df_logprice_add_full)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">RMSE</td>
-<td align="left">199641.454930147</td>
-<td align="left">199960.199631872</td>
+<td align="left">199641.4549</td>
+<td align="left">199960.1996</td>
 </tr>
 <tr class="even">
 <td align="left">RMSE Logged</td>
-<td align="left">9.57265033680769</td>
-<td align="left">9.56613711639384</td>
+<td align="left">9.5727</td>
+<td align="left">9.5661</td>
 </tr>
 <tr class="odd">
 <td align="left">loocv_RMSE</td>
-<td align="left">0.1200681685811</td>
-<td align="left">0.1200681685811</td>
+<td align="left">0.1201</td>
+<td align="left">0.1201</td>
 </tr>
 <tr class="even">
 <td align="left">R2</td>
-<td align="left">0.90513885031861</td>
-<td align="left">0.90513885031861</td>
+<td align="left">0.9051</td>
+<td align="left">0.9051</td>
 </tr>
 <tr class="odd">
 <td align="left">Adj. R2</td>
-<td align="left">0.901765555125198</td>
-<td align="left">0.901765555125198</td>
+<td align="left">0.9018</td>
+<td align="left">0.9018</td>
 </tr>
 <tr class="even">
 <td align="left">bp_decision</td>
@@ -1461,8 +1461,8 @@ kable(df_logprice_add_full)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">bp_p_value</td>
-<td align="left">0.0121636386379991</td>
-<td align="left">0.0121636386379991</td>
+<td align="left">0.0122</td>
+<td align="left">0.0122</td>
 </tr>
 <tr class="even">
 <td align="left">sw_decision</td>
@@ -1471,8 +1471,8 @@ kable(df_logprice_add_full)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">sw_p_value</td>
-<td align="left">1.0775406678238e-19</td>
-<td align="left">1.0775406678238e-19</td>
+<td align="left">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">num_params</td>
@@ -1505,38 +1505,38 @@ kable(df_logprice_add_selected)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">RMSE</td>
-<td align="left">199641.454926146</td>
-<td align="left">199960.19924507</td>
-<td align="left">199641.455480273</td>
-<td align="left">199960.199396681</td>
+<td align="left">199641.4549</td>
+<td align="left">199960.1992</td>
+<td align="left">199641.4555</td>
+<td align="left">199960.1994</td>
 </tr>
 <tr class="even">
 <td align="left">RMSE Logged</td>
-<td align="left">9.57265052518869</td>
-<td align="left">9.56611688164732</td>
-<td align="left">9.57265260595441</td>
-<td align="left">9.56612568760269</td>
+<td align="left">9.5727</td>
+<td align="left">9.5661</td>
+<td align="left">9.5727</td>
+<td align="left">9.5661</td>
 </tr>
 <tr class="odd">
 <td align="left">loocv_RMSE</td>
-<td align="left">0.118529997222708</td>
-<td align="left">0.118529997222708</td>
-<td align="left">0.119595327569136</td>
-<td align="left">0.119595327569136</td>
+<td align="left">0.1185</td>
+<td align="left">0.1185</td>
+<td align="left">0.1196</td>
+<td align="left">0.1196</td>
 </tr>
 <tr class="even">
 <td align="left">R2</td>
-<td align="left">0.904874309871549</td>
-<td align="left">0.904874309871549</td>
-<td align="left">0.901738005718643</td>
-<td align="left">0.901738005718643</td>
+<td align="left">0.9049</td>
+<td align="left">0.9049</td>
+<td align="left">0.9017</td>
+<td align="left">0.9017</td>
 </tr>
 <tr class="odd">
 <td align="left">Adj. R2</td>
-<td align="left">0.902437792728451</td>
-<td align="left">0.902437792728451</td>
-<td align="left">0.899862379104577</td>
-<td align="left">0.899862379104577</td>
+<td align="left">0.9024</td>
+<td align="left">0.9024</td>
+<td align="left">0.8999</td>
+<td align="left">0.8999</td>
 </tr>
 <tr class="even">
 <td align="left">bp_decision</td>
@@ -1547,10 +1547,10 @@ kable(df_logprice_add_selected)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">bp_p_value</td>
-<td align="left">0.00454987170690922</td>
-<td align="left">0.00454987170690922</td>
-<td align="left">0.00173734527132327</td>
-<td align="left">0.00173734527132327</td>
+<td align="left">0.0045</td>
+<td align="left">0.0045</td>
+<td align="left">0.0017</td>
+<td align="left">0.0017</td>
 </tr>
 <tr class="even">
 <td align="left">sw_decision</td>
@@ -1561,10 +1561,10 @@ kable(df_logprice_add_selected)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">sw_p_value</td>
-<td align="left">1.33178482219409e-19</td>
-<td align="left">1.33178482219409e-19</td>
-<td align="left">7.53051663821258e-19</td>
-<td align="left">7.53051663821258e-19</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">num_params</td>
@@ -1600,28 +1600,28 @@ kable(df_logprice_transform_full)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">RMSE</td>
-<td align="left">21178.4379309008</td>
-<td align="left">24258.0115236381</td>
+<td align="left">21178.4379</td>
+<td align="left">24258.0115</td>
 </tr>
 <tr class="even">
 <td align="left">RMSE Logged</td>
-<td align="left">0.110293731999763</td>
-<td align="left">0.121777254095563</td>
+<td align="left">0.1103</td>
+<td align="left">0.1218</td>
 </tr>
 <tr class="odd">
 <td align="left">loocv_RMSE</td>
-<td align="left">0.116151734191677</td>
-<td align="left">0.116151734191677</td>
+<td align="left">0.1162</td>
+<td align="left">0.1162</td>
 </tr>
 <tr class="even">
 <td align="left">R2</td>
-<td align="left">0.911925739182496</td>
-<td align="left">0.911925739182496</td>
+<td align="left">0.9119</td>
+<td align="left">0.9119</td>
 </tr>
 <tr class="odd">
 <td align="left">Adj. R2</td>
-<td align="left">0.908398956011232</td>
-<td align="left">0.908398956011232</td>
+<td align="left">0.9084</td>
+<td align="left">0.9084</td>
 </tr>
 <tr class="even">
 <td align="left">bp_decision</td>
@@ -1630,8 +1630,8 @@ kable(df_logprice_transform_full)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">bp_p_value</td>
-<td align="left">0.0483987140790023</td>
-<td align="left">0.0483987140790023</td>
+<td align="left">0.0484</td>
+<td align="left">0.0484</td>
 </tr>
 <tr class="even">
 <td align="left">sw_decision</td>
@@ -1640,8 +1640,8 @@ kable(df_logprice_transform_full)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">sw_p_value</td>
-<td align="left">1.69259640795276e-21</td>
-<td align="left">1.69259640795276e-21</td>
+<td align="left">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">num_params</td>
@@ -1681,28 +1681,28 @@ kable(df_logprice_transform_interaction_full)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">RMSE</td>
-<td align="left">20037.1653331724</td>
-<td align="left">23343.5830572794</td>
+<td align="left">20037.1653</td>
+<td align="left">23343.5831</td>
 </tr>
 <tr class="even">
 <td align="left">RMSE Logged</td>
-<td align="left">0.104837839729006</td>
-<td align="left">0.120678507551905</td>
+<td align="left">0.1048</td>
+<td align="left">0.1207</td>
 </tr>
 <tr class="odd">
 <td align="left">loocv_RMSE</td>
-<td align="left">0.115382652747423</td>
-<td align="left">0.115382652747423</td>
+<td align="left">0.1154</td>
+<td align="left">0.1154</td>
 </tr>
 <tr class="even">
 <td align="left">R2</td>
-<td align="left">0.920423749991725</td>
-<td align="left">0.920423749991725</td>
+<td align="left">0.9204</td>
+<td align="left">0.9204</td>
 </tr>
 <tr class="odd">
 <td align="left">Adj. R2</td>
-<td align="left">0.914459981814371</td>
-<td align="left">0.914459981814371</td>
+<td align="left">0.9145</td>
+<td align="left">0.9145</td>
 </tr>
 <tr class="even">
 <td align="left">bp_decision</td>
@@ -1711,8 +1711,8 @@ kable(df_logprice_transform_interaction_full)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">bp_p_value</td>
-<td align="left">0.359994359044051</td>
-<td align="left">0.359994359044051</td>
+<td align="left">0.36</td>
+<td align="left">0.36</td>
 </tr>
 <tr class="even">
 <td align="left">sw_decision</td>
@@ -1721,8 +1721,8 @@ kable(df_logprice_transform_interaction_full)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">sw_p_value</td>
-<td align="left">1.55754500157639e-22</td>
-<td align="left">1.55754500157639e-22</td>
+<td align="left">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">num_params</td>
@@ -1752,28 +1752,28 @@ kable(df_logprice_transform_interaction_aic)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">RMSE</td>
-<td align="left">20154.9709323453</td>
-<td align="left">23113.9869454411</td>
+<td align="left">20154.9709</td>
+<td align="left">23113.9869</td>
 </tr>
 <tr class="even">
 <td align="left">RMSE Logged</td>
-<td align="left">0.105398184864895</td>
-<td align="left">0.120185373505812</td>
+<td align="left">0.1054</td>
+<td align="left">0.1202</td>
 </tr>
 <tr class="odd">
 <td align="left">loocv_RMSE</td>
-<td align="left">0.11254625769067</td>
-<td align="left">0.11254625769067</td>
+<td align="left">0.1125</td>
+<td align="left">0.1125</td>
 </tr>
 <tr class="even">
 <td align="left">R2</td>
-<td align="left">0.919570826483088</td>
-<td align="left">0.919570826483088</td>
+<td align="left">0.9196</td>
+<td align="left">0.9196</td>
 </tr>
 <tr class="odd">
 <td align="left">Adj. R2</td>
-<td align="left">0.915156492041984</td>
-<td align="left">0.915156492041984</td>
+<td align="left">0.9152</td>
+<td align="left">0.9152</td>
 </tr>
 <tr class="even">
 <td align="left">bp_decision</td>
@@ -1782,8 +1782,8 @@ kable(df_logprice_transform_interaction_aic)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">bp_p_value</td>
-<td align="left">0.0785327781244631</td>
-<td align="left">0.0785327781244631</td>
+<td align="left">0.0785</td>
+<td align="left">0.0785</td>
 </tr>
 <tr class="even">
 <td align="left">sw_decision</td>
@@ -1792,8 +1792,8 @@ kable(df_logprice_transform_interaction_aic)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">sw_p_value</td>
-<td align="left">8.22202445727108e-23</td>
-<td align="left">8.22202445727108e-23</td>
+<td align="left">0</td>
+<td align="left">0</td>
 </tr>
 <tr class="even">
 <td align="left">num_params</td>
@@ -1830,6 +1830,7 @@ df_logprice_transform_interaction_outlier = lm(formula = log(SalePrice) ~ LotFro
     )</code></pre>
 <pre class="r"><code>#single table comparsion of the model 
 df = data.frame(Measure = evaluate_model_name,
+
                 Train = evaluate_model(df_logprice_transform_interaction, training, TRUE),
                 Test = evaluate_model(df_logprice_transform_interaction, testing, TRUE),
                 NoOutlier_Train = evaluate_model(df_logprice_transform_interaction_outlier, training, TRUE),
@@ -1850,38 +1851,38 @@ kable(df)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">RMSE</td>
-<td align="left">22334.2284740422</td>
-<td align="left">24415.6129585242</td>
-<td align="left">22568.0367628422</td>
-<td align="left">24282.6556573658</td>
+<td align="left">22334.2285</td>
+<td align="left">24415.613</td>
+<td align="left">22568.0368</td>
+<td align="left">24282.6557</td>
 </tr>
 <tr class="even">
 <td align="left">RMSE Logged</td>
-<td align="left">0.113868160260079</td>
-<td align="left">0.121307166106218</td>
-<td align="left">0.114468034810693</td>
-<td align="left">0.121018708142494</td>
+<td align="left">0.1139</td>
+<td align="left">0.1213</td>
+<td align="left">0.1145</td>
+<td align="left">0.121</td>
 </tr>
 <tr class="odd">
 <td align="left">loocv_RMSE</td>
-<td align="left">0.117836104240774</td>
-<td align="left">0.117836104240774</td>
-<td align="left">0.0880680766970383</td>
-<td align="left">0.0880680766970383</td>
+<td align="left">0.1178</td>
+<td align="left">0.1178</td>
+<td align="left">0.0881</td>
+<td align="left">0.0881</td>
 </tr>
 <tr class="even">
 <td align="left">R2</td>
-<td align="left">0.906124567587943</td>
-<td align="left">0.906124567587943</td>
-<td align="left">0.940650280394502</td>
-<td align="left">0.940650280394502</td>
+<td align="left">0.9061</td>
+<td align="left">0.9061</td>
+<td align="left">0.9407</td>
+<td align="left">0.9407</td>
 </tr>
 <tr class="odd">
 <td align="left">Adj. R2</td>
-<td align="left">0.903514127756164</td>
-<td align="left">0.903514127756164</td>
-<td align="left">0.938882705698348</td>
-<td align="left">0.938882705698348</td>
+<td align="left">0.9035</td>
+<td align="left">0.9035</td>
+<td align="left">0.9389</td>
+<td align="left">0.9389</td>
 </tr>
 <tr class="even">
 <td align="left">bp_decision</td>
@@ -1892,10 +1893,10 @@ kable(df)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">bp_p_value</td>
-<td align="left">0.109154883552619</td>
-<td align="left">0.109154883552619</td>
-<td align="left">0.180903745005511</td>
-<td align="left">0.180903745005511</td>
+<td align="left">0.1092</td>
+<td align="left">0.1092</td>
+<td align="left">0.1809</td>
+<td align="left">0.1809</td>
 </tr>
 <tr class="even">
 <td align="left">sw_decision</td>
@@ -1906,10 +1907,10 @@ kable(df)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">sw_p_value</td>
-<td align="left">6.70840503367686e-20</td>
-<td align="left">6.70840503367686e-20</td>
-<td align="left">0.137344077478903</td>
-<td align="left">0.137344077478903</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0.1373</td>
+<td align="left">0.1373</td>
 </tr>
 <tr class="even">
 <td align="left">num_params</td>
@@ -1969,7 +1970,7 @@ head(sort(vif(fit_final), decreasing = TRUE), 40)</code></pre>
 <pre class="r"><code>df = data.frame(Measure = evaluate_model_name,
                 fit_final_Train = evaluate_model(fit_final, training, TRUE),
                 fit_final_Test = evaluate_model(fit_final, testing, TRUE))
-
+                
 kable(df)</code></pre>
 <table>
 <thead>
@@ -1982,28 +1983,28 @@ kable(df)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">RMSE</td>
-<td align="left">22568.0367628422</td>
-<td align="left">24282.6556573658</td>
+<td align="left">22568.0368</td>
+<td align="left">24282.6557</td>
 </tr>
 <tr class="even">
 <td align="left">RMSE Logged</td>
-<td align="left">0.114468034810693</td>
-<td align="left">0.121018708142494</td>
+<td align="left">0.1145</td>
+<td align="left">0.121</td>
 </tr>
 <tr class="odd">
 <td align="left">loocv_RMSE</td>
-<td align="left">0.0880680766970383</td>
-<td align="left">0.0880680766970383</td>
+<td align="left">0.0881</td>
+<td align="left">0.0881</td>
 </tr>
 <tr class="even">
 <td align="left">R2</td>
-<td align="left">0.940650280394502</td>
-<td align="left">0.940650280394502</td>
+<td align="left">0.9407</td>
+<td align="left">0.9407</td>
 </tr>
 <tr class="odd">
 <td align="left">Adj. R2</td>
-<td align="left">0.938882705698348</td>
-<td align="left">0.938882705698348</td>
+<td align="left">0.9389</td>
+<td align="left">0.9389</td>
 </tr>
 <tr class="even">
 <td align="left">bp_decision</td>
@@ -2012,8 +2013,8 @@ kable(df)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">bp_p_value</td>
-<td align="left">0.180903745005511</td>
-<td align="left">0.180903745005511</td>
+<td align="left">0.1809</td>
+<td align="left">0.1809</td>
 </tr>
 <tr class="even">
 <td align="left">sw_decision</td>
@@ -2022,8 +2023,8 @@ kable(df)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">sw_p_value</td>
-<td align="left">0.137344077478903</td>
-<td align="left">0.137344077478903</td>
+<td align="left">0.1373</td>
+<td align="left">0.1373</td>
 </tr>
 <tr class="even">
 <td align="left">num_params</td>
@@ -2046,8 +2047,13 @@ kable(df)</code></pre>
 <div id="parameters-of-final-model" class="section level2">
 <h2>Parameters of Final Model</h2>
 <p>The expression of our final model is <span class="math display">\[
-log(y) = \beta_1x_{LotFrontage} + ...
+log(y) = \beta_0 + \beta_1x_{LotFrontage} + \beta_2x_{OverallQual} + \beta_3x_{OverallCond} + \beta_4x_{YearBuilt} + \beta_5x_{BsmtFinSF1} + \beta_6x_{TotalBsmtSF} \\
++ \beta_7log(x_{X2ndFlrSF}+1) + \beta_8x_{BsmtFullBath} + \beta_9x_{FullBath} + \beta_{10}x_{HalfBath} + \beta_{11}x_{KitchenAbvGr} + \beta_{12}x_{Fireplaces} \\
++ \beta_{13}x_{GarageCars} + \beta_{14}x_{WoodDeckSF} + \beta_{15}x_{OpenPorchSF} + \beta_{16}x_{ScreenPorch} + \beta_{17}x_{CentralAirY} + \beta_{18}x_{KitchenQualFa} \\
++ \beta_{19}x_{KitchenQualGd} + \beta_{20}x_{KitchenQualTA} + \beta_{21}log(x_{LotArea}) + \beta_{22}log(x_{GarageArea}) + \beta_{23}x_{X1stFlrSF}^2 + \beta_{24}x_{YearBuilt}log(x_{GrLivArea}) \\
++ \beta_{25}x_{OverallQual}x_{MasVnrArea} + \beta_{26}x_{YearBuilt}x_{Fireplaces}x_{X2ndFlrSF}
 \]</span></p>
+<p>There are totally 27 parameters.</p>
 </div>
 <div id="a-prediction-example" class="section level2">
 <h2>A prediction example</h2>
