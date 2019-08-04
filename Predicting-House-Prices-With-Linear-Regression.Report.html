@@ -414,12 +414,13 @@ $(document).ready(function () {
 <li><a href="#interaction">Interaction</a></li>
 <li><a href="#model-selection">Model selection</a></li>
 <li><a href="#outlier-diagnostics">Outlier diagnostics</a></li>
+</ul></li>
+<li><a href="#results">Results</a><ul>
+<li><a href="#parameters-of-final-model">Parameters of Final Model</a></li>
 <li><a href="#variance-inflation-factor-vif">Variance Inflation Factor (VIF)</a></li>
 <li><a href="#residual-diagnostics">Residual diagnostics</a></li>
 </ul></li>
-<li><a href="#results">Results</a></li>
 <li><a href="#discussion">Discussion</a><ul>
-<li><a href="#parameters-of-final-model">Parameters of Final Model</a></li>
 <li><a href="#a-prediction-example">A prediction example</a></li>
 </ul></li>
 <li><a href="#appendix">Appendix</a></li>
@@ -1921,10 +1922,24 @@ kable(df)</code></pre>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+<div id="results" class="section level1">
+<h1>Results</h1>
 <pre class="r"><code>fit_final = df_logprice_transform_interaction_outlier</code></pre>
 <ul>
 <li>Based the above the above table, the best model is selected and stored as <code>fit_final</code></li>
 </ul>
+<div id="parameters-of-final-model" class="section level2">
+<h2>Parameters of Final Model</h2>
+<p>The expression of our final model is <span class="math display">\[
+log(y) = \beta_0 + \beta_1x_{LotFrontage} + \beta_2x_{OverallQual} + \beta_3x_{OverallCond} + \beta_4x_{YearBuilt} + \beta_5x_{BsmtFinSF1} + \beta_6x_{TotalBsmtSF} \\
++ \beta_7log(x_{X2ndFlrSF}+1) + \beta_8x_{BsmtFullBath} + \beta_9x_{FullBath} + \beta_{10}x_{HalfBath} + \beta_{11}x_{KitchenAbvGr} + \beta_{12}x_{Fireplaces} \\
++ \beta_{13}x_{GarageCars} + \beta_{14}x_{WoodDeckSF} + \beta_{15}x_{OpenPorchSF} + \beta_{16}x_{ScreenPorch} + \beta_{17}x_{CentralAirY} + \beta_{18}x_{KitchenQualFa} \\
++ \beta_{19}x_{KitchenQualGd} + \beta_{20}x_{KitchenQualTA} + \beta_{21}log(x_{LotArea}) + \beta_{22}log(x_{GarageArea}) + \beta_{23}x_{X1stFlrSF}^2 + \beta_{24}x_{YearBuilt}log(x_{GrLivArea}) \\
++ \beta_{25}x_{OverallQual}x_{MasVnrArea} + \beta_{26}x_{YearBuilt}x_{Fireplaces}x_{X2ndFlrSF}
+\]</span></p>
+<p>There are totally 27 parameters.</p>
 </div>
 <div id="variance-inflation-factor-vif" class="section level2">
 <h2>Variance Inflation Factor (VIF)</h2>
@@ -2035,26 +2050,12 @@ kable(df)</code></pre>
 </table>
 </div>
 </div>
-<div id="results" class="section level1">
-<h1>Results</h1>
-</div>
 <div id="discussion" class="section level1">
 <h1>Discussion</h1>
 <p>In this project, we want to find a suitable model to predict the price of a house given the properties of it. But the original data has 79 predictors, which seems too much for a linear model. So we should do data cleaning at first. We firstly removed predictors that have too many <code>Nan</code>, meaning the data may not be available for most houses. Then we split the predictors into factor predictors and numerical predictors.</p>
 <p>In numerical predictors, we mainly focused on the colinearity of each predictor with each other. For the predictors that highly colinear related to others, we picked the representative one in our model. For example, <code>GrageCars</code> is colinear related to <code>GarageCars</code>, <code>GarageArea</code>, <code>GarageYtBlt</code> etc. This relationship intuitively makes sense. Based on the approach of analyzing data and its practical meaning behind that, we found 5 important features of a house. Our later transformations and interactions are mainly based on the top important predictors.</p>
 <p>At the same time, we also investigated the dummy variables. We hope to find a set of dummy variables to convey some information that numerical variables don’t have. A dummy variable should have a balanced amount of observations among different levels, and the house price of each level should have an obvious difference. So we selected <code>CentralAir</code> and <code>KitchenQual</code> as the dummy variable in our model.</p>
 <p>Moreover, we did a lot of tuning to make the model to satisfy the equal-variance assumption and normality assumption.</p>
-<div id="parameters-of-final-model" class="section level2">
-<h2>Parameters of Final Model</h2>
-<p>The expression of our final model is <span class="math display">\[
-log(y) = \beta_0 + \beta_1x_{LotFrontage} + \beta_2x_{OverallQual} + \beta_3x_{OverallCond} + \beta_4x_{YearBuilt} + \beta_5x_{BsmtFinSF1} + \beta_6x_{TotalBsmtSF} \\
-+ \beta_7log(x_{X2ndFlrSF}+1) + \beta_8x_{BsmtFullBath} + \beta_9x_{FullBath} + \beta_{10}x_{HalfBath} + \beta_{11}x_{KitchenAbvGr} + \beta_{12}x_{Fireplaces} \\
-+ \beta_{13}x_{GarageCars} + \beta_{14}x_{WoodDeckSF} + \beta_{15}x_{OpenPorchSF} + \beta_{16}x_{ScreenPorch} + \beta_{17}x_{CentralAirY} + \beta_{18}x_{KitchenQualFa} \\
-+ \beta_{19}x_{KitchenQualGd} + \beta_{20}x_{KitchenQualTA} + \beta_{21}log(x_{LotArea}) + \beta_{22}log(x_{GarageArea}) + \beta_{23}x_{X1stFlrSF}^2 + \beta_{24}x_{YearBuilt}log(x_{GrLivArea}) \\
-+ \beta_{25}x_{OverallQual}x_{MasVnrArea} + \beta_{26}x_{YearBuilt}x_{Fireplaces}x_{X2ndFlrSF}
-\]</span></p>
-<p>There are totally 27 parameters.</p>
-</div>
 <div id="a-prediction-example" class="section level2">
 <h2>A prediction example</h2>
 <p>We can pick an observation from test set.</p>
