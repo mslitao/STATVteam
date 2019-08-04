@@ -652,8 +652,9 @@ fit_final = df_logprice_transform_interaction_outlier
 
 ## Parameters of Final Model
 The expression of our final model is
+
 $$
-log(y) = \beta_0 + \beta_1x_{LotFrontage} + \beta_2x_{OverallQual} + \beta_3x_{OverallCond} + \beta_4x_{YearBuilt} + \beta_5x_{BsmtFinSF1} + \beta_6x_{TotalBsmtSF} \\
+log(SalePrice) = \beta_0 + \beta_1x_{LotFrontage} + \beta_2x_{OverallQual} + \beta_3x_{OverallCond} + \beta_4x_{YearBuilt} + \beta_5x_{BsmtFinSF1} + \beta_6x_{TotalBsmtSF} \\
 + \beta_7log(x_{X2ndFlrSF}+1) + \beta_8x_{BsmtFullBath} + \beta_9x_{FullBath} + \beta_{10}x_{HalfBath} + \beta_{11}x_{KitchenAbvGr} + \beta_{12}x_{Fireplaces} \\
 + \beta_{13}x_{GarageCars} + \beta_{14}x_{WoodDeckSF} + \beta_{15}x_{OpenPorchSF} + \beta_{16}x_{ScreenPorch} + \beta_{17}x_{CentralAirY} + \beta_{18}x_{KitchenQualFa} \\
 + \beta_{19}x_{KitchenQualGd} + \beta_{20}x_{KitchenQualTA} + \beta_{21}log(x_{LotArea}) + \beta_{22}log(x_{GarageArea}) + \beta_{23}x_{X1stFlrSF}^2 + \beta_{24}x_{YearBuilt}log(x_{GrLivArea}) \\
