@@ -167,8 +167,6 @@ We want to make some value cleaning and fix invalid data values in the data.
 # remove missing data, which is stored as "?"
 data = subset(data, data$GarageType != "?")
 
-
-
 #Fix some NAs
 data$GarageYrBlt[is.na(data$GarageYrBlt)] = 1
 data$MasVnrArea[is.na(data$MasVnrArea)] = 1
@@ -178,6 +176,8 @@ data$LotFrontage[is.na(data$LotFrontage)] = 1
 ## Feature Analysis
 
 ### Coorelation Analysis
+
+In this project, we have a big chanllange on the massive predictors. In order to select best correlated predictors and reduce the model complexity. We tried to compute the coorelation for each predictors to the response. 
 
 ```{r}
 #Try correlation only for numeric features
@@ -211,8 +211,9 @@ featureStat = data.frame(features = numericFeatures,
                    )
 featureStat = featureStat[order(-featureStat$abs_correlations),]
 library("knitr")
-kable(head(featureStat, 10))
+kable(head(featureStat, 20))
 ```
+
 
 Based on the predictor correlation analysis. Let's plot the charts to understand how these top predictors correlated to the response. Here we picked **OverallQual**,  **GrLivArea**, **GarageCars**, **TotalBsmtSF**, **X1stFlrSF**, **GarageArea**, **FullBath**, **YearBuilt**
 
@@ -235,31 +236,82 @@ data = data[which(data$GrLivArea < 4000),]
 
 ### Collinearity Analysis
 
-- Year based: 
+```{r echo=FALSE}
+n = length(numericFeatures)
+
+colFeaturesName = rep("", n-1)
+
+collinearity_mean = rep(0.0, n)
+
+collinearity_f1 = rep("", n)
+collinearity_f2 = rep("", n)
+collinearity_f3 = rep("", n)
+collinearity_c1 = rep(0.0, n)
+collinearity_c2 = rep(0.0, n)
+collinearity_c3 = rep(0.0, n)
+  
+for(i in 1:n){
+  index = 1
+  for(j in 1:n){
+    if(i != j){
+      colFeaturesCorr[index] = cor(data[,numericFeatures[i]], data[,numericFeatures[j]])
+      colFeaturesName[index] = numericFeatures[j]
+      
+      index = index +1
+      colFeatureStat = data.frame(features = colFeaturesName,
+                                  correlations = colFeaturesCorr,
+                                  abs_correlations = abs(colFeaturesCorr))
+      colFeatureStat = colFeatureStat[order(-colFeatureStat$abs_correlations),]
+      collinearity_mean[i] = mean(colFeatureStat$abs_correlations)
+      
+      collinearity_f1[i] = as.character(colFeatureStat$features[1])
+      collinearity_f2[i] = as.character(colFeatureStat$features[2])
+      collinearity_f3[i] = as.character(colFeatureStat$features[3])
+      
+      collinearity_c1[i] = colFeatureStat$correlations[1]
+      collinearity_c2[i] = colFeatureStat$correlations[2]
+      collinearity_c3[i] = colFeatureStat$correlations[3]
+    }
+  }
+}
+
+feature_collinearity = data.frame(features = numericFeatures, 
+                   avg_collinearity = round(collinearity_mean,2),
+                   
+                   top1_predictor = collinearity_f1,
+                   top1_collinearity = round(collinearity_c1,2),
+                   top2_predictor = collinearity_f2,
+                   top2_collinearity = round(collinearity_c2,2),
+                   top3_predictor = collinearity_f3,
+                   top3_collinearity = round(collinearity_c3,2)
+                   )
+feature_collinearity = feature_collinearity[order(-feature_collinearity$avg_collinearity),]
+library("knitr")
+kable(head(feature_collinearity,20))
+```
+We found some interesting insights. The collinearity predictors from this statistics has valid meaning in the real world.
+
+For example:
+
+- **Year** based predictors has strong collinearity: 
 
   YearBuilt - GarageYtBlt - YearRemodAdd - OverallQual
-- Area based
+
+- **Area** based predictors has strong collinearity: 
 
   GrLivArea - TotRmsAbvGrd - X2ndFlrSF - FullBath
   
   TotalBsmtSF - X1stFlrSF - OverallQual - GarageArea
   
-- Garage
+- **Garage, First/Second Floor** has similar and collinearity predictors
 
   GarageCars - GarageArea - GarageYtBlt - OverallQual
-  
-- First Floor
 
   X1stFlrSF - TotalBsmtSF - GrLivArea - GarageArea
-  
-- Second Floor
 
   X2ndFlrSF - GrLivArea - HalfBath - FullBath
-- Lot 
 
-  LotFrontage
-  LotArea
-
+Leveraging this inforamtion, we can perform better model and feature selection with siginificant domain knowledge learned from the data.
 
 ## Dummy Variables
 
@@ -476,11 +528,10 @@ We can see that with transofrmation to the response, there's a significant impro
 
 ### Predictor Tranformations
 
-- Feature range is larger (Area)
-log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea)
+- Feature range is larger (Area), we picked the LotArea, GrLivArea, X1stFlrSF, GarageArea
 
 ```{r}
-fit = lm(log(SalePrice) ~ . + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = training)
+fit = lm(log(SalePrice) ~ . + log(LotArea) + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = training)
 
 df = data.frame(Measure = c("RMSE", "RMSE Logged", "loocv_RMSE", "R2", "Adj. R2", "bp_decision", "sw_decision", "num_params"),
                 Train = evaluate_model(fit, training, TRUE),
