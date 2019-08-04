@@ -238,7 +238,7 @@ data = data[which(data$GrLivArea < 4000),]
 
 ### Collinearity Analysis
 
-There a 79 predictors in the original dataset, and some of them describe the similar property of a house and are linearly related. We want to find out the colinearity relationship with of each predictor with others.
+There are 79 predictors in the original dataset, and some of them describe the similar property of a house and are linearly related. We want to find out the colinearity relationship of each predictor with others.
 
 ```{r echo=FALSE}
 n = length(numericFeatures)
@@ -322,7 +322,7 @@ Leveraging this inforamtion, we can prune plenty of predictors, perform better m
 
 ## Dummy Variables
 
-We split the predictors into numerail and factor. In this section, we will investigate the properties of factor predictors and find out proper dummy variable for our model.
+We split the predictors into numeric and factor. In this section, we will investigate the properties of factor predictors and find out suitable dummy variable for our model.
 
 ```{r}
 data_dummy = data[, unlist(lapply(data, is.factor))]
@@ -412,7 +412,7 @@ dummy_barplot(data_dummy$CentralAir, data_dummy$SalePrice)
 dummy_barplot(data_dummy$KitchenQual, data_dummy$SalePrice)
 ```
 
-The above plots are our selected dummy variables. They don't have too many levels, and contain information that numerical variables don't have. They have relatively balanced amout, and obvious difference of house price among levels.
+The above plots are our selected dummy variables. They don't have too many levels. They have relatively balanced amout, and obvious difference of house price among levels.
 
 Based on above analysis, we decide to use 2 dummy variables.
 
@@ -575,6 +575,7 @@ We can see that with transofrmation to the response, there's a significant impro
 ### Predictor Tranformations
 
 We will make transformations to some "significant" predictors:
+
 - Feature range is larger (Area), we picked the LotArea, GrLivArea, X1stFlrSF, GarageArea
 
 ```{r}
@@ -677,7 +678,7 @@ Got it! Both equal-variance assumption and normality assumption are met in this 
 fit_final = df_logprice_transform_interaction_outlier
 ```
 
-- Based the above the above table, the best model is selected and stored as `fit_final`
+Based the above the above table, the best model is selected and stored as `fit_final`
 
 ## Parameters of Final Model
 The expression of our final model is
