@@ -289,6 +289,7 @@ feature_collinearity = feature_collinearity[order(-feature_collinearity$avg_coll
 library("knitr")
 kable(head(feature_collinearity,20))
 ```
+
 We found some interesting insights. The collinearity predictors from this statistics has valid meaning in the real world.
 
 For example:
@@ -493,22 +494,26 @@ testing  = data_selected[-sample,]
 ### Full model with all numeric predictors
 
 ```{r}
-fit = lm(SalePrice ~ ., data = training)
+fit_add_full = lm(SalePrice ~ ., data = training)
 
 # RMSE on train and test data, log and raw
-df = data.frame(Measure = evaluate_model_name,
-                Train = evaluate_model(fit,training),
-                Test = evaluate_model(fit,testing))
+df_add_full = data.frame(Measure = evaluate_model_name,
+                Train = evaluate_model(fit_add_full, training),
+                Test = evaluate_model(fit_add_full, testing))
 
-kable(df)
+kable(df_add_full)
 
-# AIC
-fit_aic = step(fit,trace = 0)
-df = data.frame(Measure = evaluate_model_name,
-                Train = evaluate_model(fit_aic,training),
-                Test = evaluate_model(fit_aic,testing))
+# AIC and BIC Model Selection
+fit_add_aic = step(fit_add_full, trace = 0)
+fit_add_bic = step(fit_add_full, trace = 0, k = log(nrow(training)))
+df_add_selected = data.frame(Measure = evaluate_model_name,
+                AIC_Train = evaluate_model(fit_add_aic, training),
+                AIC_Test = evaluate_model(fit_add_aic, testing),
+                BIC_Train = evaluate_model(fit_add_bic, training),
+                BIC_Test = evaluate_model(fit_add_bic, testing)
+                )
 
-kable(df)
+kable(df_add_selected)
 ```
 
 ## Tranformations
@@ -518,15 +523,26 @@ kable(df)
 Based on the analysis, we want to apply log transformation to response field.
 
 ```{r}
-fit = lm(log(SalePrice) ~ ., data = training)
-#summary(model1)
+fit_logprice_add_full = lm(log(SalePrice) ~ ., data = training)
 
 # RMSE on train and test data, log and raw
-df = data.frame(Measure = evaluate_model_name,
-                Train = evaluate_model(fit, training, TRUE),
-                Test = evaluate_model(fit, testing, TRUE))
+df_logprice_add_full = data.frame(Measure = evaluate_model_name,
+                Train = evaluate_model(fit_logprice_add_full, training),
+                Test = evaluate_model(fit_logprice_add_full, testing))
 
-kable(df)
+kable(df_logprice_add_full)
+
+# AIC and BIC Model Selection
+fit_logprice_add_aic = step(fit_logprice_add_full, trace = 0)
+fit_logprice_add_bic = step(fit_logprice_add_full, trace = 0, k = log(nrow(training)))
+df_logprice_add_selected = data.frame(Measure = evaluate_model_name,
+                AIC_Train = evaluate_model(fit_logprice_add_aic, training),
+                AIC_Test = evaluate_model(fit_logprice_add_aic, testing),
+                BIC_Train = evaluate_model(fit_logprice_add_bic, training),
+                BIC_Test = evaluate_model(fit_logprice_add_bic, testing)
+                )
+
+kable(df_logprice_add_selected)
 ```
 
 We can see that with transofrmation to the response, there's a significant improvement.
@@ -536,13 +552,13 @@ We can see that with transofrmation to the response, there's a significant impro
 - Feature range is larger (Area), we picked the LotArea, GrLivArea, X1stFlrSF, GarageArea
 
 ```{r}
-fit = lm(log(SalePrice) ~ . + log(LotArea) + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = training)
+fit_logprice_transform_full = lm(log(SalePrice) ~ . + log(LotArea) + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea), data = training)
 
-df = data.frame(Measure = evaluate_model_name,
-                Train = evaluate_model(fit, training, TRUE),
-                Test = evaluate_model(fit, testing, TRUE))
+df_logprice_transform_full = data.frame(Measure = evaluate_model_name,
+                Train = evaluate_model(fit_logprice_transform_full, training, TRUE),
+                Test = evaluate_model(fit_logprice_transform_full, testing, TRUE))
 
-kable(df)
+kable(df_logprice_transform_full)
 ```
 
 We can see slightly improvemtn by applying tranformation to predictors. <TODO> add more analysis here.
@@ -554,18 +570,17 @@ For top important features
 - OverallQual
 - GrLivArea
 - GarageCars
-- GarageCars
 - YearBuilt
 - YearRemodAdd
 
 ```{r}
-fit = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
+fit_logprice_transform_interaction_full = lm(log(SalePrice) ~ . + (OverallQual + GrLivArea + GarageCars + TotalBsmtSF + X1stFlrSF  + MasVnrArea + Fireplaces+ YearBuilt ) ^2 +YearBuilt:TotalBsmtSF:X1stFlrSF + YearBuilt:MasVnrArea:GarageCars + log(LotArea)  + log(GrLivArea)+log(X1stFlrSF)+log(GarageArea) , data = training)
 
-df = data.frame(Measure = evaluate_model_name,
-                Train = evaluate_model(fit, training, TRUE),
-                Test = evaluate_model(fit, testing, TRUE))
+df_logprice_transform_interaction_full = data.frame(Measure = evaluate_model_name,
+                Train = evaluate_model(fit_logprice_transform_interaction_full, training, TRUE),
+                Test = evaluate_model(fit_logprice_transform_interaction_full, testing, TRUE))
 
-kable(df)
+kable(df_logprice_transform_interaction_full)
 ```
 
 
@@ -573,22 +588,21 @@ kable(df)
 
 ```{r}
 # AIC
-fit_aic = step(fit,trace = 0)
+fit_logprice_transform_interaction_aic = step(fit_logprice_transform_interaction_full,trace = 0)
 
-
-df = data.frame(Measure = evaluate_model_name,
-                Train = evaluate_model(fit_aic, training, TRUE),
-                Test = evaluate_model(fit_aic, testing, TRUE))
-
-kable(df)
+df_logprice_transform_interaction_aic = data.frame(Measure = evaluate_model_name,
+                Train = evaluate_model(fit_logprice_transform_interaction_aic, training, TRUE),
+                Test = evaluate_model(fit_logprice_transform_interaction_aic, testing, TRUE))
+kable(df_logprice_transform_interaction_aic)
 ```
 
+Currently, it's best the model with best RMSE. However, it can not meet the `bptest`.
 
 ## Outlier diagnostics
 
 ```{r}
 
-fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond + 
+df_logprice_transform_interaction = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond + 
     YearBuilt  + BsmtFinSF1 + TotalBsmtSF + 
     log(X2ndFlrSF +1) + BsmtFullBath + FullBath + HalfBath + 
     KitchenAbvGr + Fireplaces + GarageCars  + WoodDeckSF + 
@@ -597,16 +611,10 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
     OverallQual:MasVnrArea + X2ndFlrSF:Fireplaces:YearBuilt, 
     data = training)
 
-
-df = data.frame(Measure = evaluate_model_name,
-                Train = evaluate_model(fit, training, TRUE),
-                Test = evaluate_model(fit, testing, TRUE))
-df
-
-cd_fit = cooks.distance(fit)
+cd_fit = cooks.distance(df_logprice_transform_interaction)
 large_cd_fit = cd_fit > 4 / length(cd_fit)
 
-fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond + 
+df_logprice_transform_interaction_outlier = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond + 
     YearBuilt  + BsmtFinSF1 + TotalBsmtSF + 
     log(X2ndFlrSF +1) + BsmtFullBath + FullBath + HalfBath + 
     KitchenAbvGr + Fireplaces + GarageCars  + WoodDeckSF + 
@@ -617,32 +625,25 @@ fit = lm(formula = log(SalePrice) ~ LotFrontage + OverallQual + OverallCond +
     subset = cd_fit <= 4 / length(cd_fit)
     )
 
-
-df = data.frame(Measure = evaluate_model_name,
-                Train = evaluate_model(fit, training, TRUE),
-                Test = evaluate_model(fit, testing, TRUE))
-
-kable(df)
 ```
 
 ```{r}
 #single table comparsion of the model 
 df = data.frame(Measure = evaluate_model_name,
-                fit_Train = evaluate_model(fit, training_with_dummy, TRUE),
-                fit_Test = evaluate_model(fit, testing_with_dummy, TRUE),
-                fit_aic_Train = evaluate_model(fit_aic, training_with_dummy, TRUE),
-                fit_aic_Test = evaluate_model(fit_aic, testing_with_dummy, TRUE)
+                Train = evaluate_model(df_logprice_transform_interaction, training, TRUE),
+                Test = evaluate_model(df_logprice_transform_interaction, testing, TRUE),
+                NoOutlier_Train = evaluate_model(df_logprice_transform_interaction_outlier, training, TRUE),
+                NoOutlier_Test = evaluate_model(df_logprice_transform_interaction_outlier, testing, TRUE)
                 )
 
 kable(df)
 ```
 
 ```{r}
-fit_final = fit
+fit_final = df_logprice_transform_interaction_outlier
 ```
 
 - Based the above the above table, the best model is selected and stored as `fit_final`
-
 
 
 ## Variance Inflation Factor (VIF) 
@@ -665,13 +666,12 @@ plot_qq(fit_final)
 ```
 ```{r}
 df = data.frame(Measure = evaluate_model_name,
-                fit_final_Train = evaluate_model(fit, training_with_dummy, TRUE),
-                fit_final_Test = evaluate_model(fit, testing_with_dummy, TRUE))
+                fit_final_Train = evaluate_model(fit_final, training, TRUE),
+                fit_final_Test = evaluate_model(fit_final, testing, TRUE))
 
 kable(df)
 ```
 
-### Other techniques
 
 # Results
 
