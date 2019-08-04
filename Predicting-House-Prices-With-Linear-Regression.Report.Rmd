@@ -747,8 +747,8 @@ data_test = read.csv("test.csv")
 (data_test_1_confidence = exp(predict(fit_final, newdata = data_test[1,], interval = c("confidence"), level = 0.95)))
 ```
 
-- Since the `test.csv` data set do not contain the Sale price, we can double check the result. 
-- However, with using the final model `fit_final`, we are 95% confidence that the mean Sale price is `r  data_test_1_confidence["fit"]` and within `r  data_test_1_confidence["lwr"]` and `r  data_test_1_confidence["upr"]`
+- Since the `test.csv` data set do not contain the Sale price, we can not double check the result. 
+- However, with using the final model `fit_final`, we are 95% confidence that the mean Sale price is `r  data_test_1_confidence[,"fit"]` within `r  data_test_1_confidence[,"lwr"]` and `r  data_test_1_confidence[,"upr"]`
 
 
 # Appendix
