@@ -1,6 +1,7 @@
 ---
-title: "STAT 420 Final Project Proposal"
-date: "July 17, 2019"
+title: "Predicting House Prices With Linear Regression*"
+author: "taol4,cyshek2,wanliny2"
+date: "August 1, 2019"
 output:
   html_document: 
     toc: yes
@@ -419,15 +420,16 @@ rmse = function(y, y_hat){
 alpha = 0.05
 
 library(lmtest)
-plot_fitted_resid = function(model, pointcol = "dodgerblue", linecol = "darkorange") {
+plot_fitted_resid = function(model, pointcol = "dodgerblue", linecol = "darkorange", main = "") {
   plot(fitted(model), resid(model), 
        col = pointcol, pch = 20, cex = 1.5,
+       main = main,
        xlab = "Fitted", ylab = "Residuals")
   abline(h = 0, col = linecol, lwd = 2)
 }
 
-plot_qq = function(model, pointcol = "dodgerblue", linecol = "darkorange") {
-  qqnorm(resid(model), col = pointcol, pch = 20, cex = 1.5)
+plot_qq = function(model, pointcol = "dodgerblue", linecol = "darkorange", main = "") {
+  qqnorm(resid(model), col = pointcol, pch = 20, cex = 1.5, main = main)
   qqline(resid(model), col = linecol, lwd = 2)
 }
 
@@ -688,14 +690,36 @@ kable(df)
 
 
 # Discussion
+
 In this project, we want to find a suitable model to predict the price of a house given the properties of it. But the original data has 79 predictors, which seems too much for a linear model. So we should do data cleaning at first. We firstly removed predictors that have too many `Nan`, meaning the data may not be available for most houses. Then we split the predictors into factor predictors and numerical predictors.
 
+## Best way to leverage numerical predictors
 In numerical predictors, we mainly focused on the colinearity of each predictor with each other. For the predictors that highly colinear related to others, we picked the representative one in our model. For example, `GrageCars` is colinear related to `GarageCars`, `GarageArea`, `GarageYtBlt` etc. This relationship intuitively makes sense. Based on the approach of analyzing data and its practical meaning behind that, we found 5 important features of a house. Our later transformations and interactions are mainly based on the top important predictors.
+
+## Best way to use dummy variables
 
 At the same time, we also investigated the dummy variables. We hope to find a set of dummy variables to convey some information that numerical variables don't have. A dummy variable should have a balanced amount of observations among different levels, and the house price of each level should have an obvious difference. So we selected `CentralAir` and `KitchenQual` as the dummy variable in our model.
 
 Moreover, we did a lot of tuning to make the model to satisfy the equal-variance assumption and normality assumption.
 
+## Outlier Diagnostics is siginificant 
+
+In this project, we were struggling on improving the model to pass the BP test and Shapiro-Test. After some modeling analysis. We found that by using outlier diagnostics, we can remove very few outliers by appling function cooks.distance().
+
+
+
+```{r fig.height=6, fig.width=14}
+par(mfrow = c(1, 2))
+plot_fitted_resid(df_logprice_transform_interaction, main = "Raw model")
+plot_fitted_resid(df_logprice_transform_interaction_outlier, main = "Model without outlier")
+```
+
+Above Fitted verus Residual chart proves that removing outlier can improve the model significantly. Let's further prove that by compare the Q-Q plot.
+```{r fig.height=6, fig.width=14}
+par(mfrow = c(1, 2))
+plot_qq(df_logprice_transform_interaction, main = "Raw model")
+plot_qq(df_logprice_transform_interaction_outlier, main = "Model without outlier")
+```
 
 
 ## A prediction example
