@@ -721,6 +721,20 @@ plot_qq(df_logprice_transform_interaction, main = "Raw model")
 plot_qq(df_logprice_transform_interaction_outlier, main = "Model without outlier")
 ```
 
+## Can we try a more complex model
+
+In order to try a more complex model, let's take the selected features and apply a two way interaction to all these predictors.
+
+```{r}
+fit_complex = lm(formula = log(SalePrice) ~ (LotFrontage + OverallQual + OverallCond + BsmtFinSF1 + TotalBsmtSF +  X2ndFlrSF + BsmtFullBath + FullBath + HalfBath + KitchenAbvGr + Fireplaces + GarageCars  + WoodDeckSF + OpenPorchSF + ScreenPorch + LotArea + GrLivArea + YearBuilt + GarageArea) ^ 2,data = training)
+
+df = data.frame(Measure = evaluate_model_name,
+                fit_final_Train = evaluate_model(fit_complex, training, TRUE),
+                fit_final_Test = evaluate_model(fit_complex, testing, TRUE))
+                
+kable(df)
+```
+It's clear that the more complex model start to overfitting which is a bad model.
 
 # Appendix
 
