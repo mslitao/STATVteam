@@ -453,7 +453,7 @@ get_adj_r2 = function(model) {
   summary(model)$adj.r.squared
 }
 
-evaluate_model = function(fit, data, response_log = FALSE){
+evaluate_model = function(fit, data, response_log = FALSE, round_num = 4){
   predicts = predict(fit, newdata = data)
   predicts[predicts<1] = 1
   
@@ -466,9 +466,9 @@ evaluate_model = function(fit, data, response_log = FALSE){
     rmse_log = rmse(log(data$SalePrice), log(predicts))
     rmse = rmse(data$SalePrice, predicts)
   }
-  c(rmse, rmse_log, get_loocv_rmse(fit), r2, get_adj_r2(fit), 
-    get_bp_decision(fit, alpha), bptest(fit)$p.value,
-    get_sw_decision(fit, alpha), shapiro.test(resid(fit))$p.value,
+  c(round(rmse, round_num), round(rmse_log, round_num), round(get_loocv_rmse(fit), round_num), round(r2, round_num), round(get_adj_r2(fit), round_num), 
+    get_bp_decision(fit, alpha), round(bptest(fit)$p.value, round_num),
+    get_sw_decision(fit, alpha), round(shapiro.test(resid(fit))$p.value, round_num),
     get_num_params(fit))
 }
 
@@ -630,6 +630,7 @@ df_logprice_transform_interaction_outlier = lm(formula = log(SalePrice) ~ LotFro
 ```{r}
 #single table comparsion of the model 
 df = data.frame(Measure = evaluate_model_name,
+
                 Train = evaluate_model(df_logprice_transform_interaction, training, TRUE),
                 Test = evaluate_model(df_logprice_transform_interaction, testing, TRUE),
                 NoOutlier_Train = evaluate_model(df_logprice_transform_interaction_outlier, training, TRUE),
@@ -668,7 +669,7 @@ plot_qq(fit_final)
 df = data.frame(Measure = evaluate_model_name,
                 fit_final_Train = evaluate_model(fit_final, training, TRUE),
                 fit_final_Test = evaluate_model(fit_final, testing, TRUE))
-
+                
 kable(df)
 ```
 
@@ -687,8 +688,14 @@ Moreover, we did a lot of tuning to make the model to satisfy the equal-variance
 ## Parameters of Final Model
 The expression of our final model is
 $$
-log(y) = \beta_1x_{LotFrontage} + ...
+log(y) = \beta_0 + \beta_1x_{LotFrontage} + \beta_2x_{OverallQual} + \beta_3x_{OverallCond} + \beta_4x_{YearBuilt} + \beta_5x_{BsmtFinSF1} + \beta_6x_{TotalBsmtSF} \\
++ \beta_7log(x_{X2ndFlrSF}+1) + \beta_8x_{BsmtFullBath} + \beta_9x_{FullBath} + \beta_{10}x_{HalfBath} + \beta_{11}x_{KitchenAbvGr} + \beta_{12}x_{Fireplaces} \\
++ \beta_{13}x_{GarageCars} + \beta_{14}x_{WoodDeckSF} + \beta_{15}x_{OpenPorchSF} + \beta_{16}x_{ScreenPorch} + \beta_{17}x_{CentralAirY} + \beta_{18}x_{KitchenQualFa} \\
++ \beta_{19}x_{KitchenQualGd} + \beta_{20}x_{KitchenQualTA} + \beta_{21}log(x_{LotArea}) + \beta_{22}log(x_{GarageArea}) + \beta_{23}x_{X1stFlrSF}^2 + \beta_{24}x_{YearBuilt}log(x_{GrLivArea}) \\
++ \beta_{25}x_{OverallQual}x_{MasVnrArea} + \beta_{26}x_{YearBuilt}x_{Fireplaces}x_{X2ndFlrSF}
 $$
+
+There are totally 27 parameters.
 
 ## A prediction example
 We can pick an observation from test set.
