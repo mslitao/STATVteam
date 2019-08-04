@@ -664,11 +664,11 @@ There are totally 27 parameters.
 
 ```{r fig.width=14}
 library(faraway)
-head(sort(vif(fit_final), decreasing = TRUE), 40)
+sort(vif(fit_final), decreasing = TRUE)
 ```
 
-- `r names(vif(fit_final)[which.max(vif(fit_final))])` has the largest VIF
-- Most of predictors have very high VIF. They suggest multicollinearity. It does not affect prediction. However, we should aware the multicollinearity exist in our best model for predication  
+- `r names(vif(fit_final)[which.max(vif(fit_final))])` has the largest VIF, `r vif(fit_final)[which.max(vif(fit_final))]`.
+- We have picked the predictors without collinearity issue as possible. It can help us to undertand the relationship.  
 
 ## Residual diagnostics
 
