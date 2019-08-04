@@ -452,7 +452,7 @@ get_adj_r2 = function(model) {
   summary(model)$adj.r.squared
 }
 
-evaluate_model = function(fit, data, response_log = FALSE){
+evaluate_model = function(fit, data, response_log = FALSE, round_num = 4){
   predicts = predict(fit, newdata = data)
   predicts[predicts<1] = 1
   
@@ -465,9 +465,9 @@ evaluate_model = function(fit, data, response_log = FALSE){
     rmse_log = rmse(log(data$SalePrice), log(predicts))
     rmse = rmse(data$SalePrice, predicts)
   }
-  c(rmse, rmse_log, get_loocv_rmse(fit), r2, get_adj_r2(fit), 
-    get_bp_decision(fit, alpha), bptest(fit)$p.value,
-    get_sw_decision(fit, alpha), shapiro.test(resid(fit))$p.value,
+  c(round(rmse, round_num), round(rmse_log, round_num), round(get_loocv_rmse(fit), round_num), round(r2, round_num), round(get_adj_r2(fit), round_num), 
+    get_bp_decision(fit, alpha), round(bptest(fit)$p.value, round_num),
+    get_sw_decision(fit, alpha), round(shapiro.test(resid(fit))$p.value, round_num),
     get_num_params(fit))
 }
 
@@ -628,17 +628,17 @@ kable(df)
 ```{r}
 #single table comparsion of the model 
 df = data.frame(Measure = evaluate_model_name,
-                fit_Train = evaluate_model(fit, training_with_dummy, TRUE),
-                fit_Test = evaluate_model(fit, testing_with_dummy, TRUE),
-                fit_aic_Train = evaluate_model(fit_aic, training_with_dummy, TRUE),
-                fit_aic_Test = evaluate_model(fit_aic, testing_with_dummy, TRUE)
+                fit_Train = evaluate_model(fit, training, TRUE),
+                fit_Test = evaluate_model(fit, testing, TRUE),
+                fit_aic_Train = evaluate_model(fit_aic, training, TRUE),
+                fit_aic_Test = evaluate_model(fit_aic, testing, TRUE)
                 )
 
 kable(df)
 ```
 
 ```{r}
-fit_final = fit
+fit_final = fit_aic
 ```
 
 - Based the above the above table, the best model is selected and stored as `fit_final`
@@ -665,8 +665,8 @@ plot_qq(fit_final)
 ```
 ```{r}
 df = data.frame(Measure = evaluate_model_name,
-                fit_final_Train = evaluate_model(fit, training_with_dummy, TRUE),
-                fit_final_Test = evaluate_model(fit, testing_with_dummy, TRUE))
+                fit_final_Train = evaluate_model(fit, training, TRUE),
+                fit_final_Test = evaluate_model(fit, testing, TRUE))
 
 kable(df)
 ```
